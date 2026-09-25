@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>My Tick List</title>
+<title>Tick It</title>
 <meta name="theme-color" content="#F4F6F2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121614" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="apple-mobile-web-app-title" content="Tick List">
+<meta name="apple-mobile-web-app-title" content="Tick It">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -862,7 +862,7 @@ div.row{cursor:default}
   /* ---------- home ---------- */
   function showHome() {
     $('view').hidden = true; $('home').hidden = false;
-    document.title = 'My Tick List';
+    document.title = 'Tick It';
     T.setList(null);
     renderHome(); renderNudge();
   }
@@ -927,7 +927,7 @@ div.row{cursor:default}
 
   function renderView() {
     const list = current(); if (!list) return showHome();
-    document.title = list.title + ' · My Tick List';
+    document.title = list.title + ' · Tick It';
     const { done, total } = stats(list);
     if (total < 2) reorderItems = false;
     if (document.activeElement !== $('title')) $('title').value = list.title;
@@ -1325,7 +1325,7 @@ div.row{cursor:default}
   let pending = null; // lists parsed from a backup, waiting for Add or Replace
 
   function backupText() {
-    return JSON.stringify({ app: 'tick-list', version: 2, saved: new Date().toISOString(),
+    return JSON.stringify({ app: 'tick-it', version: 2, saved: new Date().toISOString(),
       lists: data.lists.map(l => ({ title: l.title, ...(T.has(l.colour) ? { colour: l.colour } : {}), items: l.items.map(i => ({ text: i.text, done: !!i.done })) })) }, null, 1);
   }
   function markBackedUp() { ls.set('ticklist.lastBackup', new Date().toISOString()); renderLastBackup(); renderNudge(); }
@@ -1346,7 +1346,7 @@ div.row{cursor:default}
     const blob = new Blob([backupText()], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `tick-list-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `tick-it-backup-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 5000);
     markBackedUp();
@@ -1384,7 +1384,7 @@ div.row{cursor:default}
     if (lists) {
       const names = lists.slice(0, 3).map(l => `“${l.title}”`).join(', ') + (lists.length > 3 ? ` and ${lists.length - 3} more` : '');
       say('bk-restore-msg', `Found ${plural(lists.length, 'list')}: ${names}.`);
-    } else say('bk-restore-msg', 'That doesn’t look like a Tick List backup. Check you copied all of it.', true);
+    } else say('bk-restore-msg', 'That doesn’t look like a Tick It backup. Check you copied all of it.', true);
   }
   $('bk-text').addEventListener('input', checkText);
   $('bk-file').addEventListener('change', async e => {

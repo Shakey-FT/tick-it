@@ -1,6 +1,6 @@
 {
-  "name": "My Tick List",
-  "short_name": "Tick List",
+  "name": "Tick It",
+  "short_name": "Tick It",
   "description": "A private checklist: your lists never leave your device.",
   "start_url": "./",
   "scope": "./",

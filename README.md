@@ -1,15 +1,15 @@
-# Tick List
+# Tick It
 
 A simple checklist that works on your phone or computer. You can keep as many lists as you like, and there's nothing to sign up for or install.
 
-**👉 Open it: https://shakey-ft.github.io/tick-list/**
+**👉 Open it: https://shakey-ft.github.io/tick-it/**
 
 ## What you can do
 
 - **Keep several lists** for groceries, packing, chores or anything else. Each one shows how many items are done.
 - **Add, tick, edit and delete items.** Tap an item's text to change it. On a phone, swipe an item left to delete it.
 - **Paste a whole list at once.** Paste lines copied from a note or message and each line becomes its own item. Bullets, numbers and checkboxes are tidied away, and items marked `[x]` or ☑ arrive ticked.
-- **Share a list** (⋯ → **Share list**). It sends a readable checklist to WhatsApp, Messages, email or anywhere else. Whoever gets it can paste it straight into their own Tick List.
+- **Share a list** (⋯ → **Share list**). It sends a readable checklist to WhatsApp, Messages, email or anywhere else. Whoever gets it can paste it straight into their own Tick It.
 - **Ticked items move to the bottom**, so what's left to do stays at the top. You can turn this off in Settings.
 - **List options (⋯)** at the top of each list: share it, pick a list colour, reorder items, untick all, clear done items, duplicate the list, or delete it.
 - **Duplicate a list** to reuse it with everything unticked. Handy for packing lists and weekly routines. **Untick all** does the same for the list you're in.
@@ -33,7 +33,7 @@ A simple checklist that works on your phone or computer. You can keep as many li
 
 ### Put it on your home screen
 
-This adds a Tick List icon to your phone, and it opens full-screen like an app.
+This adds a Tick It icon to your phone, and it opens full-screen like an app.
 
 - **iPhone (Safari):** tap **Share**, then **Add to Home Screen**.
 - **Android (Chrome):** tap **⋮**, then **Add to Home screen** or **Install app**.
