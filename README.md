@@ -14,7 +14,7 @@ A simple checklist that works on your phone or computer. You can keep as many li
 - **List options (⋯)** at the top of each list: reorder items, untick all, clear done items, duplicate the list, or delete it.
 - **Duplicate a list** to reuse it with everything unticked. Handy for packing lists and weekly routines. **Untick all** does the same for the list you're in.
 - **Undo mistakes.** Deleting something shows an **Undo** button for a few seconds.
-- **Reorder** items (⋯ → **Reorder items**) or lists (**Reorder lists** on the home screen), then drag the ⠿ handle.
+- **Reorder** items (⋯ → **Reorder items**) or lists (⋯ → **Reorder lists** on the home screen), then drag the ⠿ handle.
 - **Filter** to see everything, only what's left to do, or only what's done.
 - **Works offline.** Once you've opened it, it opens and saves without internet.
 - **Choose a theme** in Settings: 7 colours, plus Light, Dark or match your phone.
@@ -34,7 +34,7 @@ This adds a Tick List icon to your phone, and it opens full-screen like an app.
 - **iPhone (Safari):** tap **Share**, then **Add to Home Screen**.
 - **Android (Chrome):** tap **⋮**, then **Add to Home screen** or **Install app**.
 
-> **iPhone:** the home screen app keeps its own lists, separate from Safari. If you've already made lists in Safari, open the link in Safari, go to **Backup & restore**, tap **Copy as text**, then paste it into **Backup & restore** in the home screen app. The app shows a reminder about this the first time you open it. On Android, your lists appear in both places.
+> **iPhone:** the home screen app keeps its own lists, separate from Safari. If you've already made lists in Safari, open the link in Safari, tap **⋯ → Backup & restore → Copy as text**, then paste it into **Backup & restore** in the home screen app. The app shows a reminder about this the first time you open it. On Android, your lists appear in both places.
 
 ## Where your lists are saved
 
@@ -48,7 +48,7 @@ This means:
 
 ### Keep a backup
 
-On the **All lists** screen, tap **Backup & restore**:
+On the **All lists** screen, tap **⋯** then **Backup & restore**:
 
 - **Download backup file** or **Copy as text** saves a copy of all your lists. Email it to yourself or keep it in a notes app.
 - To restore, choose the backup file or paste the text, then pick **Add to my lists** or **Replace my lists**.
