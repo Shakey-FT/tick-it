@@ -110,9 +110,11 @@
   function setList(key) { const k = has(key) ? key : null; if (k !== listKey) { listKey = k; apply(); } }
   // The accent (and second colour) a palette shows with the current settings
   const colours = key => { const { v } = compute(read(), key); return { a: v['--accent'], a2: v['--accent-2'] }; };
+  // How a style would look with the current colour, for the previews in Settings
+  const sample = style => compute({ ...read(), style }, listKey).v;
 
   dark.addEventListener('change', () => apply());
-  window.tickTheme = { palettes: P, has, read, save, apply, setList, colours };
+  window.tickTheme = { palettes: P, has, read, save, apply, setList, colours, sample };
   apply();
 })();
 </script>
@@ -291,7 +293,7 @@ div.row{cursor:default}
 .swatch i{width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .swatch[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft)}
 .modes{display:flex;gap:2px;background:var(--rule);padding:3px;border-radius:10px}
-.modes button{flex:1;border:0;background:transparent;padding:8px 10px;border-radius:8px;font-weight:500;color:var(--muted);cursor:pointer}
+.modes button{flex:1;white-space:nowrap;border:0;background:transparent;padding:8px 10px;border-radius:8px;font-weight:500;color:var(--muted);cursor:pointer}
 .modes button[aria-checked="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
 .switch{display:flex;align-items:center;justify-content:space-between;gap:14px;cursor:pointer}
 .switch input{appearance:none;flex:none;position:relative;width:46px;height:28px;margin:0;border-radius:14px;background:var(--rule);cursor:pointer;transition:background .15s}
@@ -324,6 +326,25 @@ div.row{cursor:default}
 .lists li.coloured .mini i{background:var(--row-accent)}
 .swatch.default i{background:transparent!important;box-shadow:inset 0 0 0 2px var(--muted);position:relative}
 .swatch.default i::after{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--sw)}
+.menu-item:focus-visible{outline-offset:-3px;border-radius:12px}
+.menu-item .chev{margin-left:auto;padding-left:8px;color:var(--muted);font-size:20px;line-height:1;font-weight:400}
+.menu-item>span:not(.dot):not(.chev){flex:1;min-width:0}
+.menu-item.static{flex-direction:column;align-items:stretch;cursor:default;min-height:0;padding:12px}
+.menu-item.static:hover{background:transparent}
+.menu-item.switch{justify-content:space-between;cursor:pointer}
+.menu-item.switch>span{font-weight:600}
+.sub-head{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.style-cards{display:flex;flex-direction:column;gap:10px}
+.style-card{display:flex;align-items:center;gap:14px;width:100%;padding:10px;border:1.5px solid var(--rule);border-radius:14px;background:transparent;text-align:left;cursor:pointer}
+.style-card[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.style-card strong{display:block;font-size:15.5px}
+.style-card small{display:block;color:var(--muted);font-size:12.5px}
+.pv{flex:none;display:flex;flex-direction:column;justify-content:center;gap:5px;width:84px;height:64px;padding:8px;border-radius:10px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.pv i{display:flex;align-items:center;gap:6px;height:18px;padding:0 6px;border-radius:5px}
+.pv i::before{content:"";flex:none;width:8px;height:8px;border-radius:2px;background:var(--pv-accent)}
+.pv i::after{content:"";flex:1;height:3px;border-radius:2px;background:var(--pv-ink);opacity:.5}
+.pv.paper i{border-radius:1px;box-shadow:0 1px 0 rgba(64,110,170,.35)}
+.pv.paper i::before{background:transparent;box-shadow:inset 0 0 0 1.5px var(--pv-ink)}
 .menu-item .dot{flex:none;width:20px;height:20px;border-radius:50%;background:var(--accent);box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
 
 /* ---------- Paper style: notebook paper, ruled lines and handwriting ---------- */
@@ -365,9 +386,6 @@ div.row{cursor:default}
       <p id="home-sub"></p>
     </div>
     <div class="actions">
-      <button type="button" class="icon-btn settings-open" aria-label="Settings" title="Settings">
-        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 0 0 15c1 0 1.6-.7 1.6-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5h1.8a3.4 3.4 0 0 0 3.4-3.4C17.5 5.5 14.1 2.5 10 2.5Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6.2" cy="9.5" r="1.1" fill="currentColor"/><circle cx="8.6" cy="6.2" r="1.1" fill="currentColor"/><circle cx="12.4" cy="6.2" r="1.1" fill="currentColor"/></svg>
-      </button>
       <button type="button" class="icon-btn" id="home-more" aria-label="More options" title="More options" aria-haspopup="dialog">
         <svg viewBox="0 0 20 20" aria-hidden="true"><g fill="currentColor"><circle cx="4.5" cy="10" r="1.7"/><circle cx="10" cy="10" r="1.7"/><circle cx="15.5" cy="10" r="1.7"/></g></svg>
       </button>
@@ -417,6 +435,12 @@ div.row{cursor:default}
           <span>Backup &amp; restore<small id="backup-open-hint">Save a copy, or move lists to another device</small></span>
         </button>
       </div>
+      <div class="menu-group">
+        <button type="button" class="menu-item settings-open" id="home-settings">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 0 0 15c1 0 1.6-.7 1.6-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5h1.8a3.4 3.4 0 0 0 3.4-3.4C17.5 5.5 14.1 2.5 10 2.5Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6.2" cy="9.5" r="1.1" fill="currentColor"/><circle cx="8.6" cy="6.2" r="1.1" fill="currentColor"/><circle cx="12.4" cy="6.2" r="1.1" fill="currentColor"/></svg>
+          <span>Settings<small>Colours, style, dark mode and more</small></span>
+        </button>
+      </div>
       <button type="button" class="btn ghost" id="home-close">Close</button>
     </div>
   </div>
@@ -430,14 +454,8 @@ div.row{cursor:default}
       All lists
     </button>
     <div class="actions">
-      <button type="button" class="icon-btn" id="share" aria-label="Share this list" title="Share this list">
-        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 12.5V3M6.5 6.5 10 3l3.5 3.5M5 9.5H4.5A1.5 1.5 0 0 0 3 11v4.5A1.5 1.5 0 0 0 4.5 17h11a1.5 1.5 0 0 0 1.5-1.5V11a1.5 1.5 0 0 0-1.5-1.5H15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
       <button type="button" class="icon-btn" id="more" aria-label="List options" title="List options" aria-haspopup="dialog">
         <svg viewBox="0 0 20 20" aria-hidden="true"><g fill="currentColor"><circle cx="4.5" cy="10" r="1.7"/><circle cx="10" cy="10" r="1.7"/><circle cx="15.5" cy="10" r="1.7"/></g></svg>
-      </button>
-      <button type="button" class="icon-btn settings-open" aria-label="Settings" title="Settings">
-        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 0 0 15c1 0 1.6-.7 1.6-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5h1.8a3.4 3.4 0 0 0 3.4-3.4C17.5 5.5 14.1 2.5 10 2.5Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6.2" cy="9.5" r="1.1" fill="currentColor"/><circle cx="8.6" cy="6.2" r="1.1" fill="currentColor"/><circle cx="12.4" cy="6.2" r="1.1" fill="currentColor"/></svg>
       </button>
     </div>
   </div>
@@ -491,10 +509,20 @@ div.row{cursor:default}
         <h2 id="menu-title"></h2>
       </div>
       <div class="menu-group">
+        <button type="button" class="menu-item" id="share">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 12.5V3M6.5 6.5 10 3l3.5 3.5M5 9.5H4.5A1.5 1.5 0 0 0 3 11v4.5A1.5 1.5 0 0 0 4.5 17h11a1.5 1.5 0 0 0 1.5-1.5V11a1.5 1.5 0 0 0-1.5-1.5H15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Share list<small id="share-hint">Send it as a checklist in a message</small></span>
+        </button>
         <button type="button" class="menu-item" id="list-colour">
           <span class="dot" aria-hidden="true"></span>
           <span>List colour<small id="list-colour-hint">Uses your theme colour</small></span>
         </button>
+        <button type="button" class="menu-item" id="duplicate-list">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="7" width="9.5" height="9.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M13 7V5a1.5 1.5 0 0 0-1.5-1.5h-6A1.5 1.5 0 0 0 4 5v6a1.5 1.5 0 0 0 1.5 1.5H7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span>Duplicate list<small>Make a copy with everything unticked</small></span>
+        </button>
+      </div>
+      <div class="menu-group">
         <button type="button" class="menu-item" id="reorder-items">
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4v12M7 16l-3-3M7 4 4 7M13 16V4m0 0 3 3m-3-3-3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span>Reorder items<small id="reorder-hint">Drag items into a new order</small></span>
@@ -507,9 +535,11 @@ div.row{cursor:default}
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l3 3 6-7M11 13.5h5M13 9.5h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span>Clear done items<small id="clear-hint"></small></span>
         </button>
-        <button type="button" class="menu-item" id="duplicate-list">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="7" width="9.5" height="9.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M13 7V5a1.5 1.5 0 0 0-1.5-1.5h-6A1.5 1.5 0 0 0 4 5v6a1.5 1.5 0 0 0 1.5 1.5H7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
-          <span>Duplicate list<small>Make a copy with everything unticked</small></span>
+      </div>
+      <div class="menu-group">
+        <button type="button" class="menu-item settings-open" id="list-settings">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 0 0 15c1 0 1.6-.7 1.6-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5h1.8a3.4 3.4 0 0 0 3.4-3.4C17.5 5.5 14.1 2.5 10 2.5Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6.2" cy="9.5" r="1.1" fill="currentColor"/><circle cx="8.6" cy="6.2" r="1.1" fill="currentColor"/><circle cx="12.4" cy="6.2" r="1.1" fill="currentColor"/></svg>
+          <span>Settings<small>Colours, style, dark mode and more</small></span>
         </button>
       </div>
       <div class="menu-group">
@@ -545,49 +575,86 @@ div.row{cursor:default}
 <!-- Settings -->
 <dialog id="settings-sheet" class="sheet" aria-labelledby="settings-title">
   <div class="sheet-body">
-    <h2 id="settings-title">Settings</h2>
-    <section>
-      <h3>Colour</h3>
-      <p class="hint" id="colour-note" hidden></p>
-      <div id="swatches" class="swatches" role="radiogroup" aria-label="Colour"></div>
-    </section>
-    <section>
-      <h3>Seasonal</h3>
-      <div id="seasons" class="swatches" role="radiogroup" aria-label="Seasonal colour"></div>
-    </section>
-    <section>
-      <h3>Style</h3>
-      <div id="styles" class="modes" role="radiogroup" aria-label="Style">
-        <button type="button" role="radio" data-style="classic">Classic</button>
-        <button type="button" role="radio" data-style="tinted">Tinted</button>
-        <button type="button" role="radio" data-style="paper">Paper</button>
-      </div>
-      <p class="hint" id="style-hint"></p>
-    </section>
-    <section>
-      <h3>Appearance</h3>
-      <div id="modes" class="modes" role="radiogroup" aria-label="Appearance">
-        <button type="button" role="radio" data-mode="system">System</button>
-        <button type="button" role="radio" data-mode="light">Light</button>
-        <button type="button" role="radio" data-mode="dark">Dark</button>
-      </div>
-      <label class="switch" for="pref-black">
-        <span>True black in dark mode<small>Saves battery on phones with OLED screens.</small></span>
-        <input type="checkbox" id="pref-black" role="switch">
-      </label>
-      <label class="switch" for="pref-contrast">
-        <span>High contrast<small>Bolder text and borders, easier to read.</small></span>
-        <input type="checkbox" id="pref-contrast" role="switch">
-      </label>
-    </section>
-    <div>
-      <h3>Lists</h3>
-      <label class="switch" for="pref-sink">
-        <span>Move ticked items to the bottom<small>What’s left to do stays at the top.</small></span>
-        <input type="checkbox" id="pref-sink" role="switch">
-      </label>
+    <div id="set-main" class="menu-view">
+      <h2 id="settings-title">Settings</h2>
+      <section>
+        <h3>Look</h3>
+        <div class="menu-group">
+          <button type="button" class="menu-item" id="open-colour">
+            <span class="dot" id="set-colour-dot" aria-hidden="true"></span>
+            <span>Colour<small id="set-colour-hint"></small></span><span class="chev" aria-hidden="true">›</span>
+          </button>
+          <button type="button" class="menu-item" id="open-style">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3.5" width="14" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 7.5h14M7 11h6M7 13.5h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span>Style<small id="set-style-hint"></small></span><span class="chev" aria-hidden="true">›</span>
+          </button>
+        </div>
+      </section>
+      <section>
+        <h3>Light or dark</h3>
+        <div class="menu-group">
+          <div class="menu-item static">
+            <div id="modes" class="modes" role="radiogroup" aria-label="Light or dark">
+              <button type="button" role="radio" data-mode="system">Match phone</button>
+              <button type="button" role="radio" data-mode="light">Light</button>
+              <button type="button" role="radio" data-mode="dark">Dark</button>
+            </div>
+          </div>
+          <label class="menu-item switch" for="pref-black">
+            <span>True black in dark mode<small>Saves battery on phones with OLED screens</small></span>
+            <input type="checkbox" id="pref-black" role="switch">
+          </label>
+        </div>
+      </section>
+      <section>
+        <h3>Reading</h3>
+        <div class="menu-group">
+          <label class="menu-item switch" for="pref-contrast">
+            <span>High contrast<small>Bolder text and borders, easier to read</small></span>
+            <input type="checkbox" id="pref-contrast" role="switch">
+          </label>
+        </div>
+      </section>
+      <section>
+        <h3>Lists</h3>
+        <div class="menu-group">
+          <label class="menu-item switch" for="pref-sink">
+            <span>Move ticked items to the bottom<small>What’s left to do stays at the top</small></span>
+            <input type="checkbox" id="pref-sink" role="switch">
+          </label>
+        </div>
+      </section>
+      <button type="button" class="btn" id="settings-done">Done</button>
     </div>
-    <button type="button" class="btn" id="settings-done">Done</button>
+
+    <div id="set-colour" class="menu-view" hidden>
+      <div class="sub-head">
+        <button type="button" class="back set-back"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Settings</button>
+        <h2 id="set-colour-title">Colour</h2>
+      </div>
+      <p class="hint" id="colour-note" hidden></p>
+      <div id="colour-tabs" class="modes" role="radiogroup" aria-label="Show">
+        <button type="button" role="radio" data-tab="colours">Colours</button>
+        <button type="button" role="radio" data-tab="seasonal">Seasonal</button>
+      </div>
+      <div id="swatches" class="swatches" role="radiogroup" aria-label="Colour"></div>
+      <div id="seasons" class="swatches" role="radiogroup" aria-label="Seasonal colour" hidden></div>
+      <p class="hint" id="seasons-hint" hidden>Seasonal themes blend two colours and add a little emoji to the home screen.</p>
+      <button type="button" class="btn set-done">Done</button>
+    </div>
+
+    <div id="set-style" class="menu-view" hidden>
+      <div class="sub-head">
+        <button type="button" class="back set-back"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Settings</button>
+        <h2 id="set-style-title">Style</h2>
+      </div>
+      <div id="styles" class="style-cards" role="radiogroup" aria-labelledby="set-style-title">
+        <button type="button" role="radio" class="style-card" data-style="classic"><span class="pv" aria-hidden="true"></span><span><strong>Classic</strong><small>Simple cards on a plain page</small></span></button>
+        <button type="button" role="radio" class="style-card" data-style="tinted"><span class="pv" aria-hidden="true"></span><span><strong>Tinted</strong><small>The whole page takes on a soft wash of your colour</small></span></button>
+        <button type="button" role="radio" class="style-card" data-style="paper"><span class="pv" aria-hidden="true"></span><span><strong>Paper</strong><small>Notebook paper with ruled lines and handwriting</small></span></button>
+      </div>
+      <button type="button" class="btn set-done">Done</button>
+    </div>
   </div>
 </dialog>
 
@@ -859,6 +926,7 @@ div.row{cursor:default}
     $('count').textContent = total ? (done === total ? `All ${total} done` : `${done} of ${total} done`) : 'Nothing yet';
     $('fill').style.width = total ? (done / total * 100) + '%' : '0';
     $('share').disabled = !total;
+    $('share-hint').textContent = total ? 'Send it as a checklist in a message' : 'Add some items first';
     // List options: say why an option is unavailable rather than hiding it
     $('menu-title').textContent = list.title;
     $('list-colour-hint').textContent = T.has(list.colour) ? T.palettes[list.colour].name : 'Uses your theme colour';
@@ -986,6 +1054,7 @@ div.row{cursor:default}
   /* ---------- sharing a list as readable text ---------- */
   const listAsText = l => [l.title, ...l.items.map(i => `${i.done ? '☑' : '☐'} ${i.text}`)].join('\n');
   $('share').addEventListener('click', async () => {
+    closeSheet(menuSheet);
     const l = current(), text = listAsText(l);
     if (navigator.share) {
       try { await navigator.share({ title: l.title, text }); return; }
@@ -1155,48 +1224,87 @@ div.row{cursor:default}
     setTimeout(() => box.remove(), 2400);
   }
 
-  /* ---------- settings: theme and list behaviour ---------- */
+  /* ---------- settings: a main page, with colour and style on their own screens ---------- */
   const settingsSheet = $('settings-sheet');
-  const STYLE_HINTS = {
-    classic: 'Clean white cards on a softly coloured page.',
-    tinted: 'The whole page takes on a soft wash of your colour.',
-    paper: 'Notebook paper with ruled lines and handwriting.'
-  };
+  const STYLES = { classic: 'Classic', tinted: 'Tinted', paper: 'Paper' };
+  let colourTab = null; // 'colours' or 'seasonal'
+  const fillOf = key => { const c = T.colours(key); return c.a2 !== c.a ? `linear-gradient(135deg,${c.a} 50%,${c.a2} 50%)` : c.a; };
+
+  function showSetView(name) {
+    for (const v of ['main', 'colour', 'style']) $('set-' + v).hidden = v !== name;
+    settingsSheet.scrollTop = 0;
+    const focus = { main: null, colour: '#set-colour .swatches:not([hidden]) [aria-checked="true"]', style: '#styles [aria-checked="true"]' }[name];
+    if (focus) settingsSheet.querySelector(focus)?.focus();
+  }
   function renderSettings() {
     const t = T.read(), accent = T.has(t.accent) ? t.accent : 'green', mode = t.mode || 'system';
-    const style = t.style === 'tinted' || t.style === 'paper' ? t.style : 'classic';
+    const style = STYLES[t.style] ? t.style : 'classic', pal = T.palettes[accent];
+    // main page
+    $('set-colour-dot').style.background = fillOf(accent);
+    $('set-colour-hint').textContent = (pal.season ? pal.season + ' ' : '') + pal.name;
+    $('set-style-hint').textContent = STYLES[style];
+    document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === mode)));
+    $('pref-black').checked = !!t.black;
+    $('pref-contrast').checked = !!t.contrast;
+    $('pref-sink').checked = !!prefs.sinkDone;
+    // colour screen: everyday colours and seasonal themes on separate tabs
+    const tab = colourTab || (pal.season ? 'seasonal' : 'colours');
     const all = Object.entries(T.palettes);
     const sw = ([k, p]) => swatchHtml(k, (p.season ? p.season + ' ' : '') + p.name, k === accent);
     $('swatches').innerHTML = all.filter(([, p]) => !p.season).map(sw).join('');
     $('seasons').innerHTML = all.filter(([, p]) => p.season).map(sw).join('');
-    document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === mode)));
-    document.querySelectorAll('#styles button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.style === style)));
-    $('style-hint').textContent = STYLE_HINTS[style];
-    $('pref-black').checked = !!t.black;
-    $('pref-contrast').checked = !!t.contrast;
-    $('pref-sink').checked = !!prefs.sinkDone;
+    $('swatches').hidden = tab !== 'colours';
+    $('seasons').hidden = $('seasons-hint').hidden = tab !== 'seasonal';
+    document.querySelectorAll('#colour-tabs button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.tab === tab)));
     const l = !$('view').hidden && current();
     $('colour-note').hidden = !(l && T.has(l.colour));
     if (l && T.has(l.colour)) $('colour-note').textContent = `“${l.title}” has its own colour (${T.palettes[l.colour].name}), so the colour you pick here shows on your other lists. To change this list’s colour, use ⋯ then List colour.`;
+    // style screen: a small preview of each style in the current colour
+    document.querySelectorAll('#styles .style-card').forEach(b => {
+      const v = T.sample(b.dataset.style), pv = b.querySelector('.pv');
+      b.setAttribute('aria-checked', String(b.dataset.style === style));
+      pv.className = 'pv ' + b.dataset.style;
+      pv.style.cssText = `background:${v['--ground']};--pv-accent:${v['--accent']};--pv-ink:${v['--ink']}`;
+      pv.innerHTML = `<i style="background:${v['--surface']}"></i><i style="background:${v['--surface']}"></i>`;
+    });
   }
   function saveTheme(change) { T.save({ ...T.read(), ...change }); renderSettings(); if (!$('home').hidden) renderHome(); }
-  document.querySelectorAll('.settings-open').forEach(b => b.addEventListener('click', () => { renderSettings(); openSheet(settingsSheet); }));
+
+  // Opened from either ⋯ menu
+  document.querySelectorAll('.settings-open').forEach(b => b.addEventListener('click', () => {
+    closeSheet(menuSheet); closeSheet(homeSheet);
+    colourTab = null; renderSettings(); showSetView('main'); openSheet(settingsSheet);
+    $('open-colour').focus();
+  }));
+  settingsSheet.addEventListener('close', () => ($('view').hidden ? $('home-more') : $('more')).focus());
+  $('open-colour').addEventListener('click', () => { colourTab = null; renderSettings(); showSetView('colour'); });
+  $('open-style').addEventListener('click', () => { renderSettings(); showSetView('style'); });
+  settingsSheet.querySelectorAll('.set-back').forEach(b => b.addEventListener('click', () => {
+    const from = $('set-colour').hidden ? 'open-style' : 'open-colour';
+    renderSettings(); showSetView('main'); $(from).focus();
+  }));
+  settingsSheet.querySelectorAll('.set-done').forEach(b => b.addEventListener('click', () => closeSheet(settingsSheet)));
+  $('colour-tabs').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    colourTab = b.dataset.tab; renderSettings();
+  });
   for (const id of ['swatches', 'seasons']) $(id).addEventListener('click', e => {
-    const s = e.target.closest('.swatch'); if (!s) return;
-    saveTheme({ accent: s.dataset.accent });
-    settingsSheet.querySelector(`.swatch[data-accent="${s.dataset.accent}"]`)?.focus();
+    const b = e.target.closest('.swatch'); if (!b) return;
+    saveTheme({ accent: b.dataset.accent });
+    settingsSheet.querySelector(`.swatch[data-accent="${b.dataset.accent}"]`)?.focus();
+  });
+  $('styles').addEventListener('click', e => {
+    const b = e.target.closest('.style-card'); if (!b) return;
+    saveTheme({ style: b.dataset.style });
+    settingsSheet.querySelector(`.style-card[data-style="${b.dataset.style}"]`)?.focus();
   });
   $('modes').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     saveTheme({ mode: b.dataset.mode });
   });
-  $('styles').addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    saveTheme({ style: b.dataset.style });
-  });
   $('pref-black').addEventListener('change', e => saveTheme({ black: e.target.checked }));
   $('pref-contrast').addEventListener('change', e => saveTheme({ contrast: e.target.checked }));
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (!$('home').hidden) renderHome(); });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (!$('home').hidden) renderHome(); if (settingsSheet.open) renderSettings(); });
   $('pref-sink').addEventListener('change', e => {
     prefs.sinkDone = e.target.checked; ls.set('ticklist.prefs', JSON.stringify(prefs));
     if (prefs.sinkDone) data.lists.forEach(sortDone);
