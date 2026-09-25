@@ -70,9 +70,10 @@
         : { '--ground': '#EFE8D8', '--surface': '#FFFCF3', '--ink': '#243044', '--muted': '#6E6A5E', '--rule': '#DDD2BB' });
     }
     if (d && t.black) {
+      // Pure black page; cards and dividers stay a very dark version of the theme's own colour, so warm themes stay warm
       v['--ground'] = '#000000';
-      v['--surface'] = t.style === 'tinted' ? mix(a, '#000000', .08) : '#0C0C0C';
-      v['--rule'] = t.style === 'tinted' ? mix(a, '#000000', .2) : '#262626';
+      v['--surface'] = mix(v['--surface'], '#000000', .5);
+      v['--rule'] = mix(v['--rule'], '#000000', .78);
     }
     if (t.contrast) {
       v['--ink'] = d ? '#FFFFFF' : '#000000';
