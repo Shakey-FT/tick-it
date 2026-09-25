@@ -4,274 +4,755 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>My Tick List</title>
+<meta name="theme-color" content="#F4F6F2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121614" media="(prefers-color-scheme: dark)">
+<script>
+/* Themes: applied before the page paints so there's no flash of the default colour. */
+(() => {
+  const P = {
+    green:  { name: 'Forest',   light: ['#F4F6F2','#FFFFFF','#1B2420','#65716B','#DCE2DB','#2E6A53','#FFFFFF','#E2EEE7'], dark: ['#121614','#1A201D','#E3E9E5','#8D9A93','#2B3430','#7CC3A3','#0F1A15','#1F3029'] },
+    blue:   { name: 'Ocean',    light: ['#F3F5F8','#FFFFFF','#1A2130','#646E80','#DAE0E9','#2F5BA8','#FFFFFF','#E3EAF6'], dark: ['#111419','#191E26','#E2E7EF','#8D97A8','#2A313D','#8FB2F0','#0E1624','#1F2A3D'] },
+    plum:   { name: 'Plum',     light: ['#F7F4F7','#FFFFFF','#261B26','#736574','#E6DCE5','#7A3E78','#FFFFFF','#F1E3F0'], dark: ['#161216','#1F191F','#EDE3EC','#A092A0','#352B35','#D9A0D5','#1F1020','#34233A'] },
+    sunset: { name: 'Sunset',   light: ['#F8F4F1','#FFFFFF','#2A1D18','#7A6A62','#E9DED7','#B24A2B','#FFFFFF','#F7E4DC'], dark: ['#171311','#201A17','#EFE5E0','#A6958C','#382D28','#F0987A','#241008','#3A2620'] },
+    gold:   { name: 'Gold',     light: ['#F7F6F0','#FFFFFF','#26221A','#726C5E','#E4E0D3','#8A6212','#FFFFFF','#F3EBD6'], dark: ['#15140F','#1E1C16','#ECE8DD','#A29C8C','#34312A','#E5B955','#231904','#3A3220'] },
+    rose:   { name: 'Rose',     light: ['#F8F3F4','#FFFFFF','#2A1A1E','#7A666B','#EADBDF','#B03A5B','#FFFFFF','#F8E1E7'], dark: ['#171113','#20181B','#F0E3E7','#A8939A','#3A2A30','#F29BB4','#260C15','#3D2230'] },
+    graphite:{ name: 'Graphite', light: ['#F5F5F5','#FFFFFF','#1C1C1E','#6B6B70','#E0E0E3','#2C2C30','#FFFFFF','#E9E9EC'], dark: ['#111112','#1B1B1D','#E8E8EA','#9A9AA0','#2E2E32','#E8E8EA','#111112','#2A2A2E'] }
+  };
+  const VARS = ['--ground','--surface','--ink','--muted','--rule','--accent','--accent-ink','--accent-soft'];
+  const dark = matchMedia('(prefers-color-scheme: dark)');
+  const read = () => { try { return JSON.parse(localStorage.getItem('ticklist.theme')) || {}; } catch { return {}; } };
+
+  function apply(t) {
+    t = t || read();
+    const pal = P[t.accent] || P.green;
+    const mode = t.mode === 'light' || t.mode === 'dark' ? t.mode : (dark.matches ? 'dark' : 'light');
+    const root = document.documentElement, vals = pal[mode];
+    root.dataset.theme = mode;
+    VARS.forEach((v, i) => root.style.setProperty(v, vals[i]));
+    root.style.setProperty('--danger', mode === 'dark' ? '#E58A76' : '#A6412F');
+    root.style.setProperty('--danger-soft', mode === 'dark' ? '#3A221D' : '#F6E4DF');
+    root.style.setProperty('--shadow', mode === 'dark'
+      ? '0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6)'
+      : '0 1px 2px rgba(0,0,0,.05),0 8px 24px -12px rgba(0,0,0,.16)');
+    root.style.colorScheme = mode;
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.content = vals[0]; m.removeAttribute('media'); });
+  }
+  function save(t) { try { localStorage.setItem('ticklist.theme', JSON.stringify(t)); } catch {} apply(t); }
+
+  dark.addEventListener('change', () => apply());
+  window.tickTheme = { palettes: P, read, save, apply };
+  apply();
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
-<style id="css">
+<style>
 :root{
   --ground:#F4F6F2;--surface:#FFFFFF;--ink:#1B2420;--muted:#65716B;--rule:#DCE2DB;
-  --accent:#2E6A53;--accent-ink:#FFFFFF;--accent-soft:#E2EEE7;--danger:#A6412F;
+  --accent:#2E6A53;--accent-ink:#FFFFFF;--accent-soft:#E2EEE7;--danger:#A6412F;--danger-soft:#F6E4DF;
   --shadow:0 1px 2px rgba(27,36,32,.06),0 8px 24px -12px rgba(27,36,32,.18);
   color-scheme:light;
-  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --ground:#121614;--surface:#1A201D;--ink:#E3E9E5;--muted:#8D9A93;--rule:#2B3430;
-  --accent:#7CC3A3;--accent-ink:#0F1A15;--accent-soft:#1F3029;--danger:#E58A76;
+  --accent:#7CC3A3;--accent-ink:#0F1A15;--accent-soft:#1F3029;--danger:#E58A76;--danger-soft:#3A221D;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);color-scheme:dark;}}
 :root[data-theme="dark"]{
   --ground:#121614;--surface:#1A201D;--ink:#E3E9E5;--muted:#8D9A93;--rule:#2B3430;
-  --accent:#7CC3A3;--accent-ink:#0F1A15;--accent-soft:#1F3029;--danger:#E58A76;
+  --accent:#7CC3A3;--accent-ink:#0F1A15;--accent-soft:#1F3029;--danger:#E58A76;--danger-soft:#3A221D;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);color-scheme:dark;}
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0}
-body{background:var(--ground);color:var(--ink);font:15px/1.5 Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;padding:40px 16px 56px}
+body{background:var(--ground);color:var(--ink);font:15px/1.5 Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;
+  padding:calc(24px + env(safe-area-inset-top,0px)) 16px calc(96px + env(safe-area-inset-bottom,0px))}
 .wrap{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
-button,input{font:inherit;color:inherit}
+button,input,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
+.display{font-family:"Bricolage Grotesque",Figtree,system-ui,sans-serif;font-weight:700;font-size:clamp(28px,6vw,38px);line-height:1.1;letter-spacing:-.01em;margin:0}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:10px;padding:10px 18px;background:var(--accent);color:var(--accent-ink);font-weight:600;cursor:pointer;white-space:nowrap;text-align:center}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--rule)}
+.btn.ghost:hover{box-shadow:inset 0 0 0 1.5px var(--accent);color:var(--accent)}
+.btn.ghost.danger:hover{box-shadow:inset 0 0 0 1.5px var(--danger);color:var(--danger)}
+.btn:disabled{opacity:.45;cursor:default}
+.link{border:0;background:none;padding:4px 0;color:var(--muted);font-size:13.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--rule)}
+.link:hover:not(:disabled){color:var(--accent)}
+.link.danger:hover:not(:disabled){color:var(--danger)}
+.link:disabled{opacity:.4;cursor:default;text-decoration:none}
+.link.on{color:var(--accent);font-weight:600;text-decoration-color:var(--accent)}
+.field{width:100%;padding:12px 14px;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
+.field::placeholder{color:var(--muted)}
+.field:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.hint{margin:0;color:var(--muted);font-size:13.5px}
+
+.icon-btn{flex:none;display:inline-grid;place-items:center;width:40px;height:40px;border:1px solid var(--rule);border-radius:10px;background:var(--surface);color:var(--ink);cursor:pointer}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent)}
+.icon-btn svg{width:20px;height:20px}
+.actions{display:flex;gap:8px;align-items:center}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
+
+/* move up / down buttons, shown in reorder mode */
+.mv{flex:none;position:relative;display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--rule);border-radius:9px;background:var(--surface);color:var(--ink);cursor:pointer}
+.mv:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.mv:disabled{opacity:.3;cursor:default}
+.mv svg{width:16px;height:16px}
+.movers{display:flex;gap:6px;margin:-6px -4px -6px 0}
+
+/* ---------- home: all lists ---------- */
+.home-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.home-head p{margin:4px 0 0;color:var(--muted)}
+.lists{list-style:none;margin:0;padding:0;background:var(--surface);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.lists li+li{border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 14px;width:100%;padding:14px 16px;border:0;background:transparent;text-align:left;cursor:pointer}
+button.row:hover{background:var(--accent-soft)}
+div.row{cursor:default}
+.row .name{font-weight:600;font-size:16px;overflow-wrap:anywhere}
+.row .meta{grid-column:1;display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted)}
+.row .mini{flex:1;max-width:140px;height:4px;border-radius:2px;background:var(--rule);overflow:hidden}
+.row .mini i{display:block;height:100%;background:var(--accent)}
+.row .chev,.row .movers{grid-column:2;grid-row:1/span 2}
+.row .chev{color:var(--muted);font-size:20px;line-height:1}
+.row .badge{color:var(--accent);font-weight:600}
+.empty{padding:28px 16px;text-align:center;color:var(--muted)}
+
+/* ---------- one list ---------- */
+.back{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:6px 10px 6px 4px;margin-left:-4px;border-radius:8px;color:var(--accent);font-weight:600;cursor:pointer}
+.back:hover{background:var(--accent-soft)}
+.back svg{width:16px;height:16px}
 .head{display:flex;flex-direction:column;gap:10px}
-.title{font-family:"Bricolage Grotesque",Figtree,system-ui,sans-serif;font-weight:700;font-size:clamp(28px,6vw,38px);line-height:1.1;letter-spacing:-.01em;
-  border:0;background:transparent;padding:2px 0;margin:0;width:100%;border-bottom:2px solid transparent;border-radius:0}
-.title:hover:not(:disabled){border-bottom-color:var(--rule)}
+.title-wrap{position:relative}
+.title{width:100%;border:0;background:transparent;padding:2px 28px 2px 0;border-bottom:2px solid transparent;border-radius:0}
+.title:hover{border-bottom-color:var(--rule)}
 .title:focus{outline:none;border-bottom-color:var(--accent)}
+.pencil{position:absolute;right:0;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted);pointer-events:none}
+.title:focus+.pencil{opacity:0}
 .meter{display:flex;align-items:center;gap:12px}
 .bar{flex:1;height:6px;background:var(--rule);border-radius:3px;overflow:hidden}
 .bar>i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s ease}
-.count{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.count{font-size:12.5px;color:var(--muted);white-space:nowrap}
 
 .add{display:flex;gap:8px}
-.add input{flex:1;min-width:0;padding:12px 14px;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
-.add input::placeholder{color:var(--muted)}
-.add input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.btn{border:0;border-radius:10px;padding:0 18px;background:var(--accent);color:var(--accent-ink);font-weight:600;cursor:pointer}
-.btn:disabled{opacity:.45;cursor:default}
+.add .field{flex:1;min-width:0}
 
 .bar-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .filters{display:flex;gap:2px;background:var(--rule);padding:3px;border-radius:9px}
-.filters button{border:0;background:transparent;padding:5px 12px;border-radius:7px;font-size:13.5px;font-weight:500;color:var(--muted);cursor:pointer}
+.filters button{border:0;background:transparent;padding:6px 12px;border-radius:7px;font-size:13.5px;font-weight:500;color:var(--muted);cursor:pointer}
 .filters button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
-.link{border:0;background:none;padding:4px 0;color:var(--muted);font-size:13.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--rule)}
-.link:hover:not(:disabled){color:var(--danger)}
-.link:disabled{opacity:.4;cursor:default;text-decoration:none}
+.filters button:disabled{cursor:default}
+.links{display:flex;gap:16px;flex-wrap:wrap}
 
-.list{list-style:none;margin:0;padding:0;background:var(--surface);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
-.item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-top:1px solid var(--rule)}
+.items{list-style:none;margin:0;padding:0;background:var(--surface);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.item{display:flex;align-items:flex-start;gap:14px;padding:14px;min-height:52px;border-top:1px solid var(--rule)}
 .item:first-child{border-top:0}
-.check{flex:none;width:22px;height:22px;margin-top:1px;border-radius:6px;border:2px solid var(--muted);background:transparent;cursor:pointer;display:grid;place-items:center;padding:0;transition:background .15s,border-color .15s}
-.check svg{width:13px;height:13px;opacity:0;transform:scale(.6);transition:opacity .15s,transform .15s}
+/* tick box looks 24px but its tap area is 44px */
+.check{flex:none;position:relative;width:24px;height:24px;border-radius:6px;border:2px solid var(--muted);background:transparent;cursor:pointer;display:grid;place-items:center;padding:0;transition:background .15s,border-color .15s}
+.check::after{content:"";position:absolute;inset:-10px}
+.check svg{width:14px;height:14px;opacity:0;transform:scale(.6);transition:opacity .15s,transform .15s}
+.check path{stroke:var(--accent-ink)}
 .item.done .check{background:var(--accent);border-color:var(--accent)}
 .item.done .check svg{opacity:1;transform:none}
-.check path{stroke:var(--accent-ink)}
-.text{flex:1;min-width:0;overflow-wrap:anywhere;padding:1px 0;cursor:text}
+.text{flex:1;min-width:0;overflow-wrap:anywhere;padding:0;cursor:text}
 .item.done .text{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--muted)}
+.reordering .text{cursor:default}
 .edit{flex:1;min-width:0;border:0;border-bottom:1.5px solid var(--accent);background:transparent;padding:0 0 1px;outline:none}
-.del{flex:none;border:0;background:none;color:var(--muted);width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:18px;line-height:1;opacity:0;transition:opacity .15s}
+.del{flex:none;position:relative;margin:-4px -4px -4px 0;border:0;background:none;color:var(--muted);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:20px;line-height:1;opacity:0;transition:opacity .15s}
+.del::after{content:"";position:absolute;inset:-6px}
 .item:hover .del,.del:focus-visible{opacity:1}
-.del:hover{color:var(--danger);background:var(--accent-soft)}
+.del:hover{color:var(--danger);background:var(--danger-soft)}
 @media (hover:none){.del{opacity:.6}}
-.empty{padding:28px 16px;text-align:center;color:var(--muted)}
 
-.foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
 .status{display:inline-flex;align-items:center;gap:6px}
-.status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted)}
-.status[data-s="saved"]::before{background:var(--accent)}
-.status[data-s="pending"]::before,.status[data-s="saving"]::before{background:#C9962B}
+.status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .status[data-s="error"]::before{background:var(--danger)}
-.readonly .add,.readonly .del{display:none}
-.readonly .check,.readonly .text{cursor:default}
+.confirm{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border-radius:12px;background:var(--danger-soft);font-size:14px}
+.confirm .grow{flex:1;min-width:12ch}
+.confirm button{border:0;border-radius:8px;padding:8px 12px;font-weight:600;cursor:pointer}
+.confirm .yes{background:var(--danger);color:var(--surface)}
+.confirm .no{background:transparent;text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- sheets (theme, backup) ---------- */
+.sheet{border:0;padding:0;margin:auto auto 0;width:100%;max-width:520px;max-height:92vh;background:var(--surface);color:var(--ink);border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.25)}
+@media (min-width:600px){.sheet{margin:auto;border-radius:18px}}
+.sheet::backdrop{background:rgba(0,0,0,.4)}
+.sheet-body{display:flex;flex-direction:column;gap:20px;padding:22px 20px calc(22px + env(safe-area-inset-bottom,0px))}
+.sheet h2{font-family:"Bricolage Grotesque",Figtree,system-ui,sans-serif;font-size:22px;margin:0}
+.sheet h3{margin:0 0 10px;font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sheet section{display:flex;flex-direction:column;gap:10px}
+.sheet section h3{margin:0}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn-row .btn{flex:1 1 150px}
+.sheet textarea.field{resize:vertical;min-height:84px;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px}
+.msg{margin:0;font-size:13.5px;color:var(--accent)}
+.msg.err{color:var(--danger)}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:10px}
+.swatch{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px 8px;border:1.5px solid var(--rule);border-radius:12px;background:transparent;cursor:pointer;font-size:12.5px;font-weight:500}
+.swatch i{width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.swatch[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.modes{display:flex;gap:2px;background:var(--rule);padding:3px;border-radius:10px}
+.modes button{flex:1;border:0;background:transparent;padding:8px 10px;border-radius:8px;font-weight:500;color:var(--muted);cursor:pointer}
+.modes button[aria-checked="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.sheet-body>.btn{align-self:stretch;padding:12px}
+
+/* ---------- undo toast ---------- */
+.toast{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));margin:0 auto;max-width:520px;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 16px;border-radius:12px;background:var(--ink);color:var(--ground);box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:10}
+.toast span{flex:1;min-width:0;overflow-wrap:anywhere}
+.toast button{flex:none;border:0;border-radius:8px;padding:8px 14px;background:transparent;color:var(--ground);font-weight:700;cursor:pointer;box-shadow:inset 0 0 0 1.5px currentColor}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 
-<main id="app" class="wrap"></main>
-
-<script type="application/json" id="state" data-mode="personal">{"title":"My checklist","items":[{"id":"a1","text":"Tick this box to mark it done","done":true},{"id":"a2","text":"Add your own item in the box above","done":false},{"id":"a3","text":"Click any item's text to edit it","done":false},{"id":"a4","text":"Delete these examples with the × on each row","done":false}]}</script>
-
-<script id="app-js">
-(() => {
-  const FONTS = 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap';
-  const S = '<' + '/script>';
-  let state;
-  try { state = JSON.parse(document.getElementById('state').textContent); } catch { state = { title: 'My checklist', items: [] }; }
-  // Opened as a plain file outside claude.ai: keep this person's list in their own browser.
-  const standalone = !(window.claude && window.claude.use) || document.getElementById('state').dataset.mode === 'personal';
-  if (standalone) { try { const saved = JSON.parse(localStorage.getItem('ticklist.state')); if (saved && Array.isArray(saved.items)) state = saved; } catch {} }
-  if (!Array.isArray(state.items)) state.items = [];
-
-  const store = {
-    get(k, s) { try { return (s ? sessionStorage : localStorage).getItem(k); } catch { return null; } },
-    set(k, v, s) { try { (s ? sessionStorage : localStorage).setItem(k, v); } catch {} },
-    del(k, s) { try { (s ? sessionStorage : localStorage).removeItem(k); } catch {} }
-  };
-
-  let filter = store.get('ticklist.filter') || 'all';
-  let readOnly = false, editing = null, timer = null, retried = false;
-  let artifact; // undefined = still resolving, null = unavailable
-  const artReady = (!standalone ?window.claude.use('artifact') : Promise.resolve(null))
-    .then(a => {
-      artifact = a || null;
-      if (standalone) setStatus('saved', 'Saved in this browser');
-      else if (!artifact) setStatus('local', 'Preview only — changes aren’t saved here');
-      return artifact;
-    })
-    .catch(() => { artifact = null; return null; });
-
-  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const uid = () => Math.random().toString(36).slice(2, 9);
-  const app = document.getElementById('app');
-
-  app.innerHTML = `
-    <header class="head">
-      <input id="title" class="title" aria-label="Checklist name" maxlength="80">
-      <div class="meter"><div class="bar"><i id="fill"></i></div><span id="count" class="count"></span></div>
-    </header>
-    <form id="add" class="add" autocomplete="off">
-      <input id="new-item" placeholder="Add an item and press Enter" aria-label="New item" maxlength="300">
-      <button class="btn" id="add-btn" type="submit">Add</button>
-    </form>
-    <div class="bar-row">
-      <div class="filters" role="group" aria-label="Show">
-        <button type="button" data-f="all">All</button>
-        <button type="button" data-f="todo">To do</button>
-        <button type="button" data-f="done">Done</button>
-      </div>
-      <button type="button" class="link" id="clear">Clear done</button>
+<!-- Home: every list -->
+<main id="home" class="wrap" hidden>
+  <header class="home-head">
+    <div>
+      <h1 class="display">My lists</h1>
+      <p id="home-sub"></p>
     </div>
-    <ul id="list" class="list"></ul>
-    <footer class="foot"><span id="status" class="status" data-s="saved">Saved</span><span>Click an item to edit it</span></footer>`;
+    <div class="actions">
+      <button type="button" class="icon-btn theme-open" aria-label="Change theme" title="Change theme">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 0 0 15c1 0 1.6-.7 1.6-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5h1.8a3.4 3.4 0 0 0 3.4-3.4C17.5 5.5 14.1 2.5 10 2.5Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6.2" cy="9.5" r="1.1" fill="currentColor"/><circle cx="8.6" cy="6.2" r="1.1" fill="currentColor"/><circle cx="12.4" cy="6.2" r="1.1" fill="currentColor"/></svg>
+      </button>
+      <button type="button" class="btn" id="new-list">+ New list</button>
+    </div>
+  </header>
+  <input id="search" class="field" type="search" placeholder="Find a list" aria-label="Find a list" hidden>
+  <ul id="lists" class="lists"></ul>
+  <footer class="foot">
+    <span id="status-home" class="status">Saved on this device</span>
+    <span class="links">
+      <button type="button" class="link" id="reorder-lists">Reorder lists</button>
+      <button type="button" class="link" id="backup-open">Backup &amp; restore</button>
+    </span>
+  </footer>
+</main>
 
+<!-- One list -->
+<main id="view" class="wrap" hidden>
+  <div class="topbar">
+    <button type="button" class="back" id="back">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      All lists
+    </button>
+    <button type="button" class="icon-btn theme-open" aria-label="Change theme" title="Change theme">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 0 0 15c1 0 1.6-.7 1.6-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5h1.8a3.4 3.4 0 0 0 3.4-3.4C17.5 5.5 14.1 2.5 10 2.5Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6.2" cy="9.5" r="1.1" fill="currentColor"/><circle cx="8.6" cy="6.2" r="1.1" fill="currentColor"/><circle cx="12.4" cy="6.2" r="1.1" fill="currentColor"/></svg>
+    </button>
+  </div>
+
+  <header class="head">
+    <div class="title-wrap">
+      <input id="title" class="title display" aria-label="List name (tap to rename)" maxlength="80">
+      <svg class="pencil" viewBox="0 0 16 16" aria-hidden="true"><path d="M11 2.5 13.5 5 6 12.5 3 13l.5-3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="meter"><div class="bar"><i id="fill"></i></div><span id="count" class="count mono"></span></div>
+  </header>
+
+  <form id="add" class="add" autocomplete="off">
+    <input id="new-item" class="field" placeholder="Add an item" aria-label="New item" maxlength="300" enterkeyhint="enter">
+    <button class="btn" type="submit">Add</button>
+  </form>
+
+  <div class="bar-row">
+    <div class="filters" role="group" aria-label="Show">
+      <button type="button" data-f="all">All</button>
+      <button type="button" data-f="todo">To do</button>
+      <button type="button" data-f="done">Done</button>
+    </div>
+    <div class="links">
+      <button type="button" class="link" id="reorder-items">Reorder</button>
+      <button type="button" class="link" id="reset">Untick all</button>
+      <button type="button" class="link danger" id="clear">Clear done</button>
+    </div>
+  </div>
+
+  <ul id="items" class="items"></ul>
+
+  <div id="confirm" class="confirm" role="alert" hidden>
+    <span class="grow" id="confirm-text"></span>
+    <button type="button" class="yes" id="confirm-yes">Delete list</button>
+    <button type="button" class="no" id="confirm-no">Cancel</button>
+  </div>
+
+  <footer class="foot">
+    <span id="status-view" class="status">Saved on this device</span>
+    <button type="button" class="link danger" id="delete-list">Delete this list</button>
+  </footer>
+</main>
+
+<!-- Theme picker -->
+<dialog id="theme-sheet" class="sheet" aria-labelledby="theme-title">
+  <div class="sheet-body">
+    <h2 id="theme-title">Theme</h2>
+    <div>
+      <h3>Colour</h3>
+      <div id="swatches" class="swatches" role="radiogroup" aria-label="Colour"></div>
+    </div>
+    <div>
+      <h3>Appearance</h3>
+      <div id="modes" class="modes" role="radiogroup" aria-label="Appearance">
+        <button type="button" role="radio" data-mode="system">System</button>
+        <button type="button" role="radio" data-mode="light">Light</button>
+        <button type="button" role="radio" data-mode="dark">Dark</button>
+      </div>
+    </div>
+    <button type="button" class="btn" id="theme-done">Done</button>
+  </div>
+</dialog>
+
+<!-- Backup & restore -->
+<dialog id="backup-sheet" class="sheet" aria-labelledby="backup-title">
+  <div class="sheet-body">
+    <div>
+      <h2 id="backup-title">Backup &amp; restore</h2>
+      <p class="hint" style="margin-top:6px">Your lists are saved only in this browser. Keep a backup in case browser data gets cleared, or use one to move your lists to another phone or computer.</p>
+    </div>
+    <section>
+      <h3>Save a backup</h3>
+      <div class="btn-row">
+        <button type="button" class="btn" id="bk-download">Download backup file</button>
+        <button type="button" class="btn ghost" id="bk-copy">Copy as text</button>
+      </div>
+      <p class="msg" id="bk-save-msg" role="status"></p>
+      <p class="hint" id="bk-last"></p>
+    </section>
+    <section>
+      <h3>Restore from a backup</h3>
+      <div class="btn-row">
+        <label class="btn ghost" for="bk-file">Choose backup file</label>
+      </div>
+      <input type="file" id="bk-file" accept=".json,application/json,text/plain" hidden>
+      <textarea id="bk-text" class="field" rows="3" placeholder="…or paste backup text here" aria-label="Backup text" spellcheck="false"></textarea>
+      <p class="msg" id="bk-restore-msg" role="status"></p>
+      <div class="btn-row">
+        <button type="button" class="btn" id="bk-add" disabled>Add to my lists</button>
+        <button type="button" class="btn ghost danger" id="bk-replace" disabled>Replace my lists</button>
+      </div>
+    </section>
+    <button type="button" class="btn ghost" id="bk-close">Close</button>
+  </div>
+</dialog>
+
+<!-- Undo -->
+<div id="toast" class="toast" role="status" hidden>
+  <span id="toast-text"></span>
+  <button type="button" id="toast-undo">Undo</button>
+</div>
+
+<script>
+(() => {
+  const KEY = 'ticklist.v2';        // all lists
+  const OLD_KEY = 'ticklist.state'; // the single list from the first version
+  const uid = () => Math.random().toString(36).slice(2, 9);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = id => document.getElementById(id);
-  const titleEl = $('title'), newEl = $('new-item'), list = $('list');
+  const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+  const ls = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; } }
+  };
+  const openSheet = d => { if (d.showModal) d.showModal(); else d.setAttribute('open', ''); };
+  const closeSheet = d => { if (d.close) d.close(); else d.removeAttribute('open'); };
+  document.querySelectorAll('.sheet').forEach(d => d.addEventListener('click', e => { if (e.target === d) closeSheet(d); }));
 
-  function setStatus(s, text) { const el = $('status'); el.dataset.s = s; el.textContent = text; }
+  const ICON_UP = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 10l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const ICON_DOWN = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const movers = (i, n, label) => `<span class="movers">
+      <button type="button" class="mv" data-dir="-1" aria-label="Move ${esc(label)} up"${i === 0 ? ' disabled' : ''}>${ICON_UP}</button>
+      <button type="button" class="mv" data-dir="1" aria-label="Move ${esc(label)} down"${i === n - 1 ? ' disabled' : ''}>${ICON_DOWN}</button>
+    </span>`;
+  function move(arr, from, dir) {
+    const to = from + dir;
+    if (to < 0 || to >= arr.length) return false;
+    [arr[from], arr[to]] = [arr[to], arr[from]];
+    return true;
+  }
 
-  function render() {
-    const done = state.items.filter(i => i.done).length, total = state.items.length;
-    if (document.activeElement !== titleEl) titleEl.value = state.title || '';
+  const starter = () => ({
+    id: uid(), title: 'My checklist', items: [
+      { id: uid(), text: 'Tick this box to mark it done', done: true },
+      { id: uid(), text: 'Add your own item in the box above', done: false },
+      { id: uid(), text: 'Tap any item’s text to edit it', done: false },
+      { id: uid(), text: 'Tap “All lists” to see your lists or start a new one', done: false },
+      { id: uid(), text: 'Delete these examples with the × on each row', done: false }
+    ]
+  });
+
+  function load() {
+    try {
+      const d = JSON.parse(ls.get(KEY));
+      if (d && Array.isArray(d.lists) && d.lists.length) return d;
+    } catch {}
+    let first = null;
+    try {
+      const old = JSON.parse(ls.get(OLD_KEY));
+      if (old && Array.isArray(old.items)) first = { id: uid(), title: old.title || 'My checklist', items: old.items };
+    } catch {}
+    first = first || starter();
+    return { activeId: first.id, lists: [first] };
+  }
+
+  let data = load();
+  let filter = ls.get('ticklist.filter') || 'all';
+  let editing = null, query = '', reorderItems = false, reorderLists = false;
+
+  const byId = id => data.lists.find(l => l.id === id);
+  const current = () => byId(data.activeId);
+  const stats = l => { const done = l.items.filter(i => i.done).length; return { done, total: l.items.length }; };
+
+  function save() {
+    const ok = ls.set(KEY, JSON.stringify(data));
+    for (const id of ['status-home', 'status-view']) {
+      const el = $(id); el.dataset.s = ok ? 'ok' : 'error';
+      el.textContent = ok ? 'Saved on this device' : 'This browser is blocking storage, so changes will be lost when you close the page';
+    }
+  }
+
+  /* ---------- undo ---------- */
+  let toastTimer = null, undoSnap = null;
+  function withUndo(label, fn) {
+    const snap = JSON.stringify(data);
+    fn(); save();
+    undoSnap = snap;
+    $('toast-text').textContent = label;
+    $('toast').hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, 7000);
+  }
+  function hideToast() { $('toast').hidden = true; undoSnap = null; }
+  $('toast-undo').addEventListener('click', () => {
+    if (!undoSnap) return;
+    data = JSON.parse(undoSnap); save(); hideToast();
+    if (!byId(data.activeId)) data.activeId = data.lists[0].id;
+    route();
+  });
+
+  /* ---------- navigation: #list-<id> opens a list, no hash shows home ---------- */
+  let openedFromHome = false;
+  function route() {
+    editing = null; $('confirm').hidden = true;
+    const m = location.hash.match(/^#list-(.+)$/);
+    const list = m && byId(m[1]);
+    if (list) { if (data.activeId !== list.id) reorderItems = false; data.activeId = list.id; save(); showView(); }
+    else showHome();
+  }
+  function openList(id, fresh) {
+    openedFromHome = true; location.hash = 'list-' + id;
+    route();
+    if (fresh) { $('title').focus(); $('title').select(); }
+  }
+  function goHome() { if (openedFromHome) history.back(); else location.hash = ''; }
+
+  /* ---------- home ---------- */
+  function showHome() {
+    $('view').hidden = true; $('home').hidden = false;
+    document.title = 'My Tick List';
+    renderHome();
+  }
+  function renderHome() {
+    const n = data.lists.length;
+    const open = data.lists.filter(l => { const s = stats(l); return !s.total || s.done < s.total; }).length;
+    $('home-sub').textContent = n === 1 ? '1 list' : `${n} lists · ${open} still in progress`;
+    if (n < 2) reorderLists = false;
+    $('reorder-lists').hidden = n < 2;
+    $('reorder-lists').textContent = reorderLists ? 'Done reordering' : 'Reorder lists';
+    $('reorder-lists').classList.toggle('on', reorderLists);
+    $('search').hidden = n < 6 || reorderLists;
+    if ($('search').hidden) { query = ''; $('search').value = ''; }
+    const q = query.trim().toLowerCase();
+    const shown = data.lists.filter(l => !q || l.title.toLowerCase().includes(q));
+    if (!shown.length) { $('lists').innerHTML = `<li class="empty">No list matches “${esc(query.trim())}”.</li>`; return; }
+    $('lists').innerHTML = shown.map((l, i) => {
+      const { done, total } = stats(l);
+      const complete = total && done === total;
+      const meta = `<span class="meta">
+          ${complete ? '<span class="badge">✓ All done</span>' : `<span class="mono">${total ? `${done} of ${total} done` : 'Empty'}</span>`}
+          ${total ? `<span class="mini"><i style="width:${done / total * 100}%"></i></span>` : ''}
+        </span>`;
+      return reorderLists
+        ? `<li><div class="row" data-list="${esc(l.id)}"><span class="name">${esc(l.title)}</span>${movers(i, shown.length, l.title)}${meta}</div></li>`
+        : `<li><button type="button" class="row" data-list="${esc(l.id)}"><span class="name">${esc(l.title)}</span><span class="chev" aria-hidden="true">›</span>${meta}</button></li>`;
+    }).join('');
+  }
+  $('lists').addEventListener('click', e => {
+    const mv = e.target.closest('.mv');
+    const row = e.target.closest('.row'); if (!row) return;
+    if (mv) {
+      const idx = data.lists.findIndex(l => l.id === row.dataset.list), dir = +mv.dataset.dir;
+      if (move(data.lists, idx, dir)) { save(); renderHome(); refocusMover($('lists'), `[data-list="${CSS.escape(row.dataset.list)}"]`, dir); }
+    } else if (!reorderLists) openList(row.dataset.list);
+  });
+  $('reorder-lists').addEventListener('click', () => { reorderLists = !reorderLists; renderHome(); });
+  $('new-list').addEventListener('click', () => {
+    const l = { id: uid(), title: 'New list', items: [] };
+    data.lists.unshift(l); save(); query = ''; $('search').value = ''; reorderLists = false;
+    openList(l.id, true);
+  });
+  $('search').addEventListener('input', e => { query = e.target.value; renderHome(); });
+
+  // After a move, keep focus on the same arrow (or its partner if that end is now reached)
+  function refocusMover(container, sel, dir) {
+    const r = container.querySelector(sel); if (!r) return;
+    const same = r.querySelector(`.mv[data-dir="${dir}"]`), other = r.querySelector(`.mv[data-dir="${-dir}"]`);
+    (same && !same.disabled ? same : other)?.focus();
+    r.scrollIntoView({ block: 'nearest' });
+  }
+
+  /* ---------- one list ---------- */
+  function showView() { $('home').hidden = true; $('view').hidden = false; renderView(); window.scrollTo(0, 0); }
+  function change() { save(); renderView(); }
+
+  function renderView() {
+    const list = current(); if (!list) return showHome();
+    document.title = list.title + ' · My Tick List';
+    const { done, total } = stats(list);
+    if (total < 2) reorderItems = false;
+    if (document.activeElement !== $('title')) $('title').value = list.title;
     $('count').textContent = total ? `${done} of ${total} done` : 'Nothing yet';
     $('fill').style.width = total ? (done / total * 100) + '%' : '0';
-    $('clear').disabled = readOnly || !done;
-    $('clear').textContent = done ? `Clear done (${done})` : 'Clear done';
-    document.querySelectorAll('.filters button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === filter)));
-    app.classList.toggle('readonly', readOnly);
-    titleEl.disabled = readOnly;
+    $('clear').disabled = !done; $('clear').textContent = done ? `Clear done (${done})` : 'Clear done';
+    $('reset').disabled = !done;
+    $('reorder-items').hidden = total < 2;
+    $('reorder-items').textContent = reorderItems ? 'Done reordering' : 'Reorder';
+    $('reorder-items').classList.toggle('on', reorderItems);
+    $('reset').hidden = $('clear').hidden = reorderItems;
+    $('items').classList.toggle('reordering', reorderItems);
+    document.querySelectorAll('.filters button').forEach(b => {
+      b.setAttribute('aria-pressed', String(reorderItems ? b.dataset.f === 'all' : b.dataset.f === filter));
+      b.disabled = reorderItems;
+    });
 
-    const shown = state.items.filter(i => filter === 'all' || (filter === 'done') === !!i.done);
+    const f = reorderItems ? 'all' : filter;
+    const shown = list.items.filter(i => f === 'all' || (f === 'done') === !!i.done);
     if (!shown.length) {
-      list.innerHTML = `<li class="empty">${total ? (filter === 'done' ? 'Nothing ticked off yet.' : 'All done. Nice.') : 'Your list is empty. Add the first item above.'}</li>`;
+      $('items').innerHTML = `<li class="empty">${total ? (f === 'done' ? 'Nothing ticked off yet.' : 'All done. Nice.') : 'This list is empty. Add the first item above.'}</li>`;
       return;
     }
-    list.innerHTML = shown.map(i => `
+    $('items').innerHTML = shown.map((i, idx) => `
       <li class="item${i.done ? ' done' : ''}" data-id="${esc(i.id)}">
-        <button type="button" class="check" role="checkbox" aria-checked="${!!i.done}" aria-label="${esc(i.text)}"${readOnly ? ' disabled' : ''}>
+        <button type="button" class="check" role="checkbox" aria-checked="${!!i.done}" aria-label="${esc(i.text)}">
           <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.2 4.8 9 10 3.2" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         ${editing === i.id
-          ? `<input class="edit" id="edit-${esc(i.id)}" value="${esc(i.text)}" aria-label="Edit item" maxlength="300">`
+          ? `<input class="edit" id="edit-${esc(i.id)}" value="${esc(i.text)}" aria-label="Edit item" maxlength="300" enterkeyhint="done">`
           : `<span class="text">${esc(i.text)}</span>`}
-        <button type="button" class="del" aria-label="Delete ${esc(i.text)}">×</button>
+        ${reorderItems ? movers(idx, shown.length, i.text) : `<button type="button" class="del" aria-label="Delete ${esc(i.text)}">×</button>`}
       </li>`).join('');
     if (editing) { const e = $('edit-' + editing); if (e) { e.focus(); e.setSelectionRange(e.value.length, e.value.length); } }
   }
 
-  function change() {
-    render(); if (readOnly) return;
-    if (standalone) {
-      try { localStorage.setItem('ticklist.state', JSON.stringify(state)); setStatus('saved', 'Saved in this browser'); }
-      catch { setStatus('error', 'This browser is blocking storage, so changes will be lost when you close the page'); }
-      return;
-    }
-    setStatus('pending', 'Unsaved changes…'); clearTimeout(timer); timer = setTimeout(save, 1400); }
+  $('back').addEventListener('click', goHome);
 
-  function buildDoc() {
-    const json = JSON.stringify(state).replace(/</g, '\\u003c');
-    return '<!doctype html><html lang="en"><head><meta charset="utf-8">'
-      + '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
-      + '<title>My Tick List</title>'
-      + '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-      + `<link rel="stylesheet" href="${FONTS}">`
-      + `<style id="css">${$('css').textContent}</style></head><body>`
-      + '<main id="app" class="wrap"></main>'
-      + `<script type="application/json" id="state" data-mode="personal">${json}${S}`
-      + `<script id="app-js">${$('app-js').textContent}${S}`
-      + '</body></html>';
-  }
+  const titleEl = $('title');
+  titleEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') titleEl.blur();
+    if (e.key === 'Escape') { titleEl.value = current().title; titleEl.blur(); }
+  });
+  titleEl.addEventListener('blur', () => {
+    const list = current(); if (!list) return;
+    const v = titleEl.value.trim() || 'Untitled list';
+    if (v !== list.title) { list.title = v; change(); } else titleEl.value = v;
+  });
 
-  async function save() {
-    if (editing) { timer = setTimeout(save, 1400); return; }
-    const art = artifact === undefined ? await artReady : artifact;
-    if (!art) { setStatus('local', 'Preview only — changes aren’t saved here'); return; }
-    setStatus('saving', 'Saving…');
-    store.set('ticklist.draft', newEl.value, true);
-    if (document.activeElement === newEl) store.set('ticklist.focus', '1', true);
-    try {
-      await art.publish(buildDoc());
-      setStatus('saved', 'Saved');
-    } catch (e) {
-      const c = e && e.code;
-      if (c === 'conflict') setStatus('pending', 'Someone else saved first — loading their version');
-      else if (['not_writer', 'not_granted', 'consent_required', 'capability_disabled', 'capability_removed', 'not_declared'].includes(c)) {
-        readOnly = true; render(); setStatus('local', 'Read-only — you can view this list but not change it');
-      } else if (c === 'rate_limited') { setStatus('pending', 'Saving shortly…'); timer = setTimeout(save, 6000); }
-      else if (!retried) { retried = true; timer = setTimeout(save, 1500 + Math.random() * 1500); }
-      else setStatus('error', 'Couldn’t save. Your changes are still here — make another edit to try again.');
-    }
-  }
+  $('delete-list').addEventListener('click', () => {
+    const l = current(), n = l.items.length;
+    $('confirm-text').textContent = `Delete “${l.title}”${n ? ` and its ${plural(n, 'item')}` : ''}?`;
+    $('confirm').hidden = false; $('confirm-no').focus();
+  });
+  $('confirm-no').addEventListener('click', () => { $('confirm').hidden = true; });
+  $('confirm-yes').addEventListener('click', () => {
+    const title = current().title;
+    withUndo(`Deleted “${title}”`, () => {
+      data.lists = data.lists.filter(l => l.id !== data.activeId);
+      if (!data.lists.length) data.lists.push({ id: uid(), title: 'My checklist', items: [] });
+      data.activeId = data.lists[0].id;
+    });
+    $('confirm').hidden = true; goHome();
+  });
+
+  const newEl = $('new-item');
+  $('add').addEventListener('submit', e => {
+    e.preventDefault();
+    const v = newEl.value.trim(); if (!v) return;
+    current().items.push({ id: uid(), text: v, done: false });
+    newEl.value = '';
+    if (filter === 'done') { filter = 'all'; ls.set('ticklist.filter', filter); }
+    change(); newEl.focus();
+  });
+
+  document.querySelector('.filters').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b || reorderItems) return;
+    filter = b.dataset.f; ls.set('ticklist.filter', filter);
+    renderView();
+  });
+
+  $('reorder-items').addEventListener('click', () => { reorderItems = !reorderItems; editing = null; renderView(); });
+  $('clear').addEventListener('click', () => {
+    const n = stats(current()).done;
+    withUndo(`Cleared ${plural(n, 'done item')}`, () => { current().items = current().items.filter(i => !i.done); });
+    renderView();
+  });
+  $('reset').addEventListener('click', () => {
+    withUndo('Unticked everything', () => { current().items.forEach(i => { i.done = false; }); });
+    renderView();
+  });
 
   function commitEdit(input, keep) {
-    const item = state.items.find(i => i.id === editing);
+    const list = current(), item = list.items.find(i => i.id === editing);
     editing = null;
     if (item && keep) {
       const v = input.value.trim();
-      if (!v) { state.items = state.items.filter(i => i !== item); return change(); }
+      if (!v) { withUndo(`Deleted “${item.text}”`, () => { list.items = list.items.filter(i => i !== item); }); return renderView(); }
       if (v !== item.text) { item.text = v; return change(); }
     }
-    render();
+    renderView();
   }
 
-  $('add').addEventListener('submit', e => {
-    e.preventDefault();
-    const v = newEl.value.trim();
-    if (!v || readOnly) return;
-    state.items.push({ id: uid(), text: v, done: false });
-    newEl.value = ''; store.del('ticklist.draft', true);
-    if (filter === 'done') { filter = 'all'; store.set('ticklist.filter', filter); }
-    change();
-  });
-  newEl.addEventListener('input', () => store.set('ticklist.draft', newEl.value, true));
-
-  titleEl.addEventListener('keydown', e => { if (e.key === 'Enter') titleEl.blur(); if (e.key === 'Escape') { titleEl.value = state.title; titleEl.blur(); } });
-  titleEl.addEventListener('blur', () => { const v = titleEl.value.trim() || 'My checklist'; if (v !== state.title) { state.title = v; change(); } else titleEl.value = v; });
-
-  document.querySelector('.filters').addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    filter = b.dataset.f; store.set('ticklist.filter', filter); render();
-  });
-
-  $('clear').addEventListener('click', () => { state.items = state.items.filter(i => !i.done); change(); });
-
-  list.addEventListener('click', e => {
-    if (readOnly) return;
+  $('items').addEventListener('click', e => {
     const li = e.target.closest('.item'); if (!li) return;
-    const item = state.items.find(i => i.id === li.dataset.id); if (!item) return;
-    if (e.target.closest('.check')) { item.done = !item.done; change(); li.parentElement && list.querySelector(`[data-id="${CSS.escape(item.id)}"] .check`)?.focus(); }
-    else if (e.target.closest('.del')) { state.items = state.items.filter(i => i !== item); change(); }
-    else if (e.target.closest('.text') && editing !== item.id) { editing = item.id; render(); }
+    const list = current(), idx = list.items.findIndex(i => i.id === li.dataset.id), item = list.items[idx]; if (!item) return;
+    const mv = e.target.closest('.mv');
+    if (mv) {
+      const dir = +mv.dataset.dir;
+      if (move(list.items, idx, dir)) { change(); refocusMover($('items'), `[data-id="${CSS.escape(item.id)}"]`, dir); }
+    } else if (e.target.closest('.check')) {
+      item.done = !item.done; change();
+      $('items').querySelector(`[data-id="${CSS.escape(item.id)}"] .check`)?.focus();
+    } else if (e.target.closest('.del')) {
+      withUndo(`Deleted “${item.text}”`, () => { list.items.splice(idx, 1); });
+      renderView();
+    } else if (e.target.closest('.text') && editing !== item.id && !reorderItems) {
+      editing = item.id; renderView();
+    }
   });
-  list.addEventListener('keydown', e => {
+  $('items').addEventListener('keydown', e => {
     if (!e.target.classList.contains('edit')) return;
     if (e.key === 'Enter') { e.preventDefault(); commitEdit(e.target, true); }
     if (e.key === 'Escape') commitEdit(e.target, false);
   });
-  list.addEventListener('focusout', e => { if (e.target.classList.contains('edit') && editing) commitEdit(e.target, true); });
+  $('items').addEventListener('focusout', e => { if (e.target.classList.contains('edit') && editing) commitEdit(e.target, true); });
 
-  const draft = store.get('ticklist.draft', true);
-  if (draft) newEl.value = draft;
-  if (store.get('ticklist.focus', true)) { store.del('ticklist.focus', true); newEl.focus(); }
-  render();
+  /* ---------- theme picker ---------- */
+  const T = window.tickTheme, themeSheet = $('theme-sheet');
+  function renderTheme() {
+    const t = T.read(), accent = T.palettes[t.accent] ? t.accent : 'green', mode = t.mode || 'system';
+    const showDark = document.documentElement.dataset.theme === 'dark';
+    $('swatches').innerHTML = Object.entries(T.palettes).map(([key, p]) =>
+      `<button type="button" class="swatch" role="radio" data-accent="${key}" aria-checked="${key === accent}">
+        <i style="background:${(showDark ? p.dark : p.light)[5]}"></i>${p.name}</button>`).join('');
+    document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === mode)));
+  }
+  document.querySelectorAll('.theme-open').forEach(b => b.addEventListener('click', () => { renderTheme(); openSheet(themeSheet); }));
+  $('swatches').addEventListener('click', e => {
+    const s = e.target.closest('.swatch'); if (!s) return;
+    T.save({ ...T.read(), accent: s.dataset.accent }); renderTheme();
+  });
+  $('modes').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    T.save({ ...T.read(), mode: b.dataset.mode }); renderTheme();
+  });
+  $('theme-done').addEventListener('click', () => closeSheet(themeSheet));
+
+  /* ---------- backup & restore ---------- */
+  const bkSheet = $('backup-sheet');
+  let pending = null; // lists parsed from a backup, waiting for Add or Replace
+
+  function backupText() {
+    return JSON.stringify({ app: 'tick-list', version: 2, saved: new Date().toISOString(),
+      lists: data.lists.map(l => ({ title: l.title, items: l.items.map(i => ({ text: i.text, done: !!i.done })) })) }, null, 1);
+  }
+  function markBackedUp() { ls.set('ticklist.lastBackup', new Date().toISOString()); renderLastBackup(); }
+  function renderLastBackup() {
+    const t = ls.get('ticklist.lastBackup');
+    $('bk-last').textContent = t ? `Last backup: ${new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}` : 'You haven’t made a backup on this device yet.';
+  }
+  function say(id, text, err) { const el = $(id); el.textContent = text; el.classList.toggle('err', !!err); }
+
+  $('backup-open').addEventListener('click', () => {
+    say('bk-save-msg', ''); say('bk-restore-msg', ''); $('bk-text').value = ''; setPending(null);
+    renderLastBackup(); openSheet(bkSheet);
+  });
+  $('bk-close').addEventListener('click', () => closeSheet(bkSheet));
+
+  $('bk-download').addEventListener('click', () => {
+    const blob = new Blob([backupText()], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `tick-list-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    markBackedUp();
+    say('bk-save-msg', `Backup of ${plural(data.lists.length, 'list')} downloaded. Keep the file somewhere safe, like your email or cloud drive.`);
+  });
+  $('bk-copy').addEventListener('click', async () => {
+    const text = backupText();
+    try {
+      await navigator.clipboard.writeText(text);
+      markBackedUp();
+      say('bk-save-msg', 'Backup copied. Paste it into a note or email to yourself.');
+    } catch {
+      $('bk-text').value = text; $('bk-text').focus(); $('bk-text').select(); setPending(null);
+      say('bk-save-msg', 'Couldn’t copy automatically. The backup is in the box below: select it all and copy it.', true);
+    }
+  });
+
+  function parseBackup(text) {
+    let d; try { d = JSON.parse(text); } catch { return null; }
+    const raw = Array.isArray(d && d.lists) ? d.lists : (d && Array.isArray(d.items) ? [d] : null);
+    if (!raw) return null;
+    const lists = raw.filter(l => l && Array.isArray(l.items)).map(l => ({
+      id: uid(), title: String(l.title || 'Untitled list').slice(0, 80),
+      items: l.items.filter(i => i && typeof i.text === 'string' && i.text.trim())
+        .map(i => ({ id: uid(), text: i.text.trim().slice(0, 300), done: !!i.done }))
+    }));
+    return lists.length ? lists : null;
+  }
+  function setPending(lists) { pending = lists; $('bk-add').disabled = $('bk-replace').disabled = !lists; }
+  function checkText() {
+    const t = $('bk-text').value.trim();
+    if (!t) { setPending(null); say('bk-restore-msg', ''); return; }
+    const lists = parseBackup(t);
+    setPending(lists);
+    if (lists) {
+      const names = lists.slice(0, 3).map(l => `“${l.title}”`).join(', ') + (lists.length > 3 ? ` and ${lists.length - 3} more` : '');
+      say('bk-restore-msg', `Found ${plural(lists.length, 'list')}: ${names}.`);
+    } else say('bk-restore-msg', 'That doesn’t look like a Tick List backup. Check you copied all of it.', true);
+  }
+  $('bk-text').addEventListener('input', checkText);
+  $('bk-file').addEventListener('change', async e => {
+    const file = e.target.files && e.target.files[0]; if (!file) return;
+    try { $('bk-text').value = await file.text(); checkText(); }
+    catch { say('bk-restore-msg', 'Couldn’t read that file. Try choosing it again.', true); }
+    e.target.value = '';
+  });
+  function finishRestore(label, fn) {
+    withUndo(label, fn);
+    closeSheet(bkSheet); setPending(null);
+    if (location.hash) goHome(); else renderHome();
+  }
+  $('bk-add').addEventListener('click', () => {
+    if (!pending) return;
+    const lists = pending;
+    finishRestore(`Added ${plural(lists.length, 'list')} from the backup`, () => { data.lists.push(...lists); });
+  });
+  $('bk-replace').addEventListener('click', () => {
+    if (!pending) return;
+    const lists = pending;
+    finishRestore(`Replaced your lists with ${plural(lists.length, 'list')} from the backup`, () => { data.lists = lists; data.activeId = lists[0].id; });
+  });
+
+  /* ---------- start ---------- */
+  // Keep two open tabs in step
+  window.addEventListener('storage', e => { if (e.key === KEY && !editing) { data = load(); route(); } });
+  window.addEventListener('hashchange', route);
+
+  // With only one list, skip the home screen and open it straight away.
+  if (!location.hash && data.lists.length === 1) history.replaceState(null, '', '#list-' + data.lists[0].id);
+  save();
+  route();
 })();
 </script>
 </body>
