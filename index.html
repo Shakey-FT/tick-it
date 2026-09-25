@@ -32,7 +32,7 @@
     sunset: { name: 'Sunset',   light: ['#F8F4F1','#FFFFFF','#2A1D18','#7A6A62','#E9DED7','#B24A2B','#FFFFFF','#F7E4DC'], dark: ['#171311','#201A17','#EFE5E0','#A6958C','#382D28','#F0987A','#241008','#3A2620'] },
     terracotta:{ name: 'Terracotta', light: ['#F7F2EE','#FFFFFF','#291C17','#786962','#E7DBD3','#9C4A34','#FFFFFF','#F2E1D8'], dark: ['#161210','#1F1916','#EEE3DE','#A5948C','#382C27','#E3957C','#240F08','#3A261F'] },
     gold:   { name: 'Gold',     light: ['#F7F6F0','#FFFFFF','#26221A','#726C5E','#E4E0D3','#8A6212','#FFFFFF','#F3EBD6'], dark: ['#15140F','#1E1C16','#ECE8DD','#A29C8C','#34312A','#E5B955','#231904','#3A3220'] },
-    mocha:  { name: 'Mocha',    light: ['#F6F3EF','#FFFFFF','#271E18','#766A60','#E3DBD2','#7A5236','#FFFFFF','#EFE5DB'], dark: ['#15120F','#1E1A16','#EDE5DD','#A3978C','#352E28','#D8B08C','#23160B','#3A2E24'] },
+    mocha:  { name: 'Mocha',    light: ['#F6F3EF','#FFFFFF','#271E18','#766A60','#E3DBD2','#7A5236','#FFFFFF','#EFE5DB'], dark: ['#150F0B','#1F1712','#EFE3D8','#AD9888','#392A20','#B97E4F','#1E1107','#3C2819'] },
     graphite:{ name: 'Graphite', light: ['#F5F5F5','#FFFFFF','#1C1C1E','#6B6B70','#E0E0E3','#2C2C30','#FFFFFF','#E9E9EC'], dark: ['#111112','#1B1B1D','#E8E8EA','#9A9AA0','#2E2E32','#E8E8EA','#111112','#2A2A2E'] },
     // Seasonal: a second colour for progress bars and confetti, and a little emoji on the home screen
     spring: { name: 'Spring',   season: '🌸', accent2: ['#E07FA3','#F2A7C3'], light: ['#F5F8F1','#FFFFFF','#1C241D','#66725F','#DCE5D5','#3E7D4F','#FFFFFF','#E2F0DF'], dark: ['#111611','#192019','#E3EBE2','#8D9C8B','#2B362A','#8FD29F','#0D1C11','#203222'] },
@@ -46,6 +46,8 @@
   const dark = matchMedia('(prefers-color-scheme: dark)');
   const read = () => { try { return JSON.parse(localStorage.getItem('ticklist.theme')) || {}; } catch { return {}; } };
   const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const lum = h => rgb(h).map(c => c / 255).map(c => c <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4).reduce((s, c, i) => s + c * [.2126, .7152, .0722][i], 0);
+  const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
   const mix = (a, b, w) => { const x = rgb(a), y = rgb(b); return '#' + x.map((v, i) => Math.round(v * w + y[i] * (1 - w)).toString(16).padStart(2, '0')).join(''); };
 
   // The colours for a theme, optionally with a list's own colour in place of the theme colour
@@ -80,6 +82,10 @@
     }
     v['--danger'] = d ? '#E58A76' : '#A6412F';
     v['--danger-soft'] = d ? '#3A221D' : '#F6E4DF';
+    // Keep grey hints and coloured text readable (4.5:1) on every background they sit on
+    const ensure = (fg, bgs) => { for (let i = 0; i < 30 && bgs.some(b => ratio(v[fg], v[b]) < 4.6); i++) v[fg] = mix(v[fg], d ? '#FFFFFF' : '#000000', .93); };
+    ensure('--muted', ['--ground', '--surface', '--accent-soft']);
+    ensure('--accent', ['--ground', '--surface']);
     return { mode, v, pal };
   }
 
@@ -120,7 +126,8 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Patrick+Hand&display=swap">
+<!-- Fonts load alongside the page instead of holding it up; the app shows in system fonts until they arrive -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Patrick+Hand&display=swap" media="print" onload="this.media='all'">
 <style>
 :root{
   --ground:#F4F6F2;--surface:#FFFFFF;--ink:#1B2420;--muted:#65716B;--rule:#DCE2DB;
@@ -157,7 +164,7 @@ button,input,textarea{font:inherit;color:inherit}
 .link.danger:hover:not(:disabled){color:var(--danger)}
 .link:disabled{opacity:.4;cursor:default;text-decoration:none}
 .link.on{color:var(--accent);font-weight:600;text-decoration-color:var(--accent)}
-.field{width:100%;padding:12px 14px;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
+.field{width:100%;font-size:16px;padding:12px 14px;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
 .field::placeholder{color:var(--muted)}
 .field:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .hint{margin:0;color:var(--muted);font-size:13.5px}
@@ -187,6 +194,12 @@ button,input,textarea{font:inherit;color:inherit}
 .fab:hover{box-shadow:0 10px 24px -4px rgba(0,0,0,.4),0 2px 4px rgba(0,0,0,.12)}
 .fab:active{transform:scale(.94)}
 body.toasting .fab{transform:translateY(-72px)}
+.new-list-top{display:none}
+@media (hover:hover) and (pointer:fine){
+  .fab{display:none}
+  .new-list-top{display:inline-flex}
+  body{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+}
 .lists{list-style:none;margin:0;padding:0;background:var(--surface);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
 .lists li{background:var(--surface)}
 .lists li+li{border-top:1px solid var(--rule)}
@@ -219,13 +232,18 @@ div.row{cursor:default}
 .bar>i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s ease}
 .count{font-size:12.5px;color:var(--muted);white-space:nowrap}
 
-.add{display:flex;gap:8px}
-.add .field{flex:1;min-width:0}
+.add{position:relative}
+.add .field{padding-right:56px}
+.add-btn{position:absolute;top:50%;right:7px;transform:translateY(-50%);display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:50%;background:var(--accent);color:var(--accent-ink);cursor:pointer;transition:opacity .15s,transform .15s}
+.add-btn::after{content:"";position:absolute;inset:-4px}
+.add-btn svg{width:18px;height:18px}
+.add-btn:active{transform:translateY(-50%) scale(.92)}
+.add .field:placeholder-shown+.add-btn{opacity:.35}
 .add-hint{margin:-12px 0 0;font-size:12.5px;color:var(--muted)}
 
 .bar-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .filters{display:flex;gap:2px;background:var(--rule);padding:3px;border-radius:9px}
-.filters button{border:0;background:transparent;padding:6px 12px;border-radius:7px;font-size:13.5px;font-weight:500;color:var(--muted);cursor:pointer}
+.filters button{border:0;background:transparent;padding:6px 12px;border-radius:7px;font-size:13.5px;font-weight:500;color:var(--ink);cursor:pointer}
 .filters button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .filters button:disabled{cursor:default}
 .links{display:flex;gap:16px;flex-wrap:wrap}
@@ -243,15 +261,31 @@ div.row{cursor:default}
 .check path{stroke:var(--accent-ink)}
 .item.done .check{background:var(--accent);border-color:var(--accent)}
 .item.done .check svg{opacity:1;transform:none}
-.text{flex:1;min-width:0;overflow-wrap:anywhere;padding:0;cursor:text}
-.item.done .text{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--muted)}
+.text{flex:1;min-width:0;overflow-wrap:anywhere;padding:0;cursor:text;font-size:16px;line-height:1.45}
+.item.done .text{color:var(--muted)}
+/* the strike-through is drawn as a line under each line of text, so it can sweep across */
+.text .t{background:linear-gradient(currentColor,currentColor) 0 58%/0 1.5px no-repeat;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.item.done .text .t{background-size:100% 1.5px}
+.item.just-ticked .check{animation:tick-pop .34s cubic-bezier(.3,1.5,.5,1)}
+.item.just-ticked.done .check path{stroke-dasharray:12;stroke-dashoffset:12;animation:tick-draw .26s .05s ease-out forwards}
+.item.just-ticked.done .text .t{animation:strike .3s .08s ease-out both}
+@keyframes tick-pop{0%{transform:scale(.82)}60%{transform:scale(1.14)}100%{transform:scale(1)}}
+@keyframes tick-draw{to{stroke-dashoffset:0}}
+@keyframes strike{from{background-size:0 1.5px}to{background-size:100% 1.5px}}
+.item.gliding{position:relative;z-index:2;box-shadow:0 10px 24px -8px rgba(0,0,0,.28),0 0 0 1px var(--rule)}
+.item.arriving{animation:arrive .3s ease-out}
+@keyframes arrive{from{opacity:0}to{opacity:1}}
 .reordering .text{cursor:default}
-.edit{flex:1;min-width:0;border:0;border-bottom:1.5px solid var(--accent);background:transparent;padding:0 0 1px;outline:none}
+.edit{flex:1;min-width:0;font-size:16px;line-height:1.45;border:0;border-bottom:1.5px solid var(--accent);background:transparent;padding:0 0 1px;outline:none}
 .del{flex:none;position:relative;margin:-4px -4px -4px 0;border:0;background:none;color:var(--muted);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:20px;line-height:1;opacity:0;transition:opacity .15s}
 .del::after{content:"";position:absolute;inset:-6px}
 .item:hover .del,.del:focus-visible{opacity:1}
 .del:hover{color:var(--danger);background:var(--danger-soft)}
-@media (hover:none){.del{opacity:.6}}
+@media (pointer:coarse){.item .del{position:absolute;width:1px;height:1px;margin:0;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}}
+/* one-time tip on phones: swipe to delete, with a small demonstration on the first item */
+.swipe-tip svg{width:18px;height:18px;vertical-align:-4px;margin-right:4px;color:var(--danger)}
+.item.peek{animation:peek 1.3s ease-in-out}
+@keyframes peek{0%,100%{transform:none;box-shadow:none}30%,62%{transform:translateX(-72px);box-shadow:600px 0 0 var(--danger-soft)}}
 
 .foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
 .status{display:inline-flex;align-items:center;gap:6px}
@@ -262,6 +296,22 @@ div.row{cursor:default}
 .reorder-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 8px 8px 14px;border-radius:12px;background:var(--accent-soft);font-size:14px}
 .reorder-bar svg{width:14px;height:14px;vertical-align:-2px;color:var(--accent)}
 .reorder-bar .btn{padding:8px 16px}
+.select-bar{flex-wrap:wrap}
+body.selecting{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))!important}
+.select-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.select-bar .btn.ghost{background:var(--surface)}
+/* selecting lists: a tick box on each row */
+.row.sel-row{grid-template-columns:auto 1fr}
+.sel-row .pick{grid-column:1;grid-row:1/span 2;display:grid;place-items:center;width:24px;height:24px;border-radius:6px;border:2px solid var(--muted);transition:background .15s,border-color .15s}
+.sel-row .pick svg{width:14px;height:14px;opacity:0}
+.sel-row .pick path{stroke:var(--accent-ink)}
+.sel-row .name,.sel-row .meta{grid-column:2}
+.lists li.selected{background:var(--accent-soft)}
+.lists li.selected .pick{background:var(--accent);border-color:var(--accent)}
+.lists li.selected .pick svg{opacity:1}
+.select-actions{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:9;max-width:588px;margin:0 auto}
+.select-actions .btn{width:100%;padding:14px;font-size:16px;box-shadow:0 8px 24px -6px rgba(0,0,0,.35)}
+.select-actions .btn:disabled{opacity:1;background:var(--rule);color:var(--muted);box-shadow:none}
 
 /* ---------- list options sheet ---------- */
 .menu-view{display:flex;flex-direction:column;gap:16px}
@@ -291,6 +341,7 @@ div.row{cursor:default}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap}
 .btn-row .btn{flex:1 1 150px}
 .sheet textarea.field{resize:vertical;min-height:84px;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px}
+@media (pointer:coarse){.sheet textarea.field{font-size:16px}}
 .msg{margin:0;font-size:13.5px;color:var(--accent)}
 .msg.err{color:var(--danger)}
 .swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:10px}
@@ -298,7 +349,9 @@ div.row{cursor:default}
 .swatch i{width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .swatch[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft)}
 .modes{display:flex;gap:2px;background:var(--rule);padding:3px;border-radius:10px}
-.modes button{flex:1;white-space:nowrap;border:0;background:transparent;padding:8px 10px;border-radius:8px;font-weight:500;color:var(--muted);cursor:pointer}
+.modes button{flex:1;white-space:nowrap;border:0;background:transparent;padding:8px 10px;border-radius:8px;font-weight:500;color:var(--ink);cursor:pointer}
+.filters button[aria-pressed="true"],.modes button[aria-checked="true"]{font-weight:600}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .modes button[aria-checked="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
 .switch{display:flex;align-items:center;justify-content:space-between;gap:14px;cursor:pointer}
 .switch input{appearance:none;flex:none;position:relative;width:46px;height:28px;margin:0;border-radius:14px;background:var(--rule);cursor:pointer;transition:background .15s}
@@ -364,7 +417,7 @@ div.row{cursor:default}
 [data-style="paper"] .item.done .check{background:transparent;border-color:var(--ink)}
 [data-style="paper"] .item.done .check path{stroke:var(--accent)}
 [data-style="paper"] .check svg{width:19px;height:19px;overflow:visible}
-[data-style="paper"] .item.done .text{text-decoration-color:var(--accent);text-decoration-thickness:1.5px}
+[data-style="paper"] .item.done .text .t{background-image:linear-gradient(var(--accent),var(--accent))}
 
 /* ---------- High contrast: bolder text and borders ---------- */
 [data-contrast="high"] .item,[data-contrast="high"] .lists li+li{border-top-width:1.5px}
@@ -391,6 +444,7 @@ div.row{cursor:default}
       <p id="home-sub"></p>
     </div>
     <div class="actions">
+      <button type="button" class="btn new-list-top" id="new-list-top">+ New list</button>
       <button type="button" class="icon-btn" id="home-more" aria-label="More options" title="More options" aria-haspopup="dialog">
         <svg viewBox="0 0 20 20" aria-hidden="true"><g fill="currentColor"><circle cx="4.5" cy="10" r="1.7"/><circle cx="10" cy="10" r="1.7"/><circle cx="15.5" cy="10" r="1.7"/></g></svg>
       </button>
@@ -403,11 +457,11 @@ div.row{cursor:default}
       <button type="button" class="btn ghost ios-dismiss">Got it</button>
     </div>
   </div>
-  <div class="note" id="backup-nudge" role="note" hidden>
-    <p id="backup-nudge-text"></p>
+  <div class="note backup-nudge" id="backup-nudge" role="note" hidden>
+    <p class="nudge-text" id="backup-nudge-text"></p>
     <div class="btn-row">
-      <button type="button" class="btn" id="nudge-backup">Back up now</button>
-      <button type="button" class="btn ghost" id="nudge-later">Not now</button>
+      <button type="button" class="btn nudge-backup" id="nudge-backup">Back up now</button>
+      <button type="button" class="btn ghost nudge-later" id="nudge-later">Not now</button>
     </div>
   </div>
   <input id="search" class="field" type="search" placeholder="Find a list" aria-label="Find a list" hidden>
@@ -415,7 +469,17 @@ div.row{cursor:default}
     <span>Drag the <svg viewBox="0 0 18 18" aria-hidden="true"><g fill="currentColor"><circle cx="6.5" cy="4" r="1.5"/><circle cx="11.5" cy="4" r="1.5"/><circle cx="6.5" cy="9" r="1.5"/><circle cx="11.5" cy="9" r="1.5"/><circle cx="6.5" cy="14" r="1.5"/><circle cx="11.5" cy="14" r="1.5"/></g></svg> handles to move lists</span>
     <button type="button" class="btn" id="reorder-lists-done">Done</button>
   </div>
+  <div class="reorder-bar select-bar" id="select-bar" hidden>
+    <span id="select-count" role="status">Tap lists to select them</span>
+    <span class="select-btns">
+      <button type="button" class="btn ghost" id="select-all">Select all</button>
+      <button type="button" class="btn" id="select-cancel">Cancel</button>
+    </span>
+  </div>
   <ul id="lists" class="lists"></ul>
+  <div class="select-actions" id="select-actions" hidden>
+    <button type="button" class="btn danger-fill" id="select-delete" disabled>Delete</button>
+  </div>
   <button type="button" class="fab" id="new-list" aria-label="New list" title="New list">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
   </button>
@@ -433,6 +497,10 @@ div.row{cursor:default}
         <h2 id="home-sheet-title">My lists</h2>
       </div>
       <div class="menu-group">
+        <button type="button" class="menu-item" id="select-lists">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m4.5 6 1.1 1.1L7.6 5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="11" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 6h5M12 14h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span>Select lists<small id="select-lists-hint">Choose several lists to delete at once</small></span>
+        </button>
         <button type="button" class="menu-item" id="reorder-lists">
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4v12M7 16l-3-3M7 4 4 7M13 16V4m0 0 3 3m-3-3-3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span>Reorder lists<small id="reorder-lists-hint">Drag lists into a new order</small></span>
@@ -453,6 +521,22 @@ div.row{cursor:default}
   </div>
 </dialog>
 
+<!-- Delete several lists: confirm -->
+<dialog id="bulk-sheet" class="sheet" aria-labelledby="bulk-title" aria-describedby="bulk-text">
+  <div class="sheet-body">
+    <div class="menu-view" role="alertdialog" aria-labelledby="bulk-title" aria-describedby="bulk-text">
+      <div>
+        <h2 id="bulk-title">Delete these lists?</h2>
+        <p class="hint" id="bulk-text" style="margin-top:6px"></p>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn danger-fill" id="bulk-yes">Delete</button>
+        <button type="button" class="btn ghost" id="bulk-no">Cancel</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
 <!-- One list -->
 <main id="view" class="wrap" hidden>
   <div class="topbar">
@@ -468,6 +552,7 @@ div.row{cursor:default}
   </div>
 
   <header class="head">
+    <h1 class="sr-only" id="view-heading"></h1>
     <div class="title-wrap">
       <input id="title" class="title display" aria-label="List name (tap to rename)" maxlength="80" enterkeyhint="next">
       <svg class="pencil" viewBox="0 0 16 16" aria-hidden="true"><path d="M11 2.5 13.5 5 6 12.5 3 13l.5-3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
@@ -483,9 +568,19 @@ div.row{cursor:default}
     </div>
   </div>
 
+  <div class="note backup-nudge" id="backup-nudge-view" role="note" hidden>
+    <p class="nudge-text"></p>
+    <div class="btn-row">
+      <button type="button" class="btn nudge-backup">Back up now</button>
+      <button type="button" class="btn ghost nudge-later">Not now</button>
+    </div>
+  </div>
+
   <form id="add" class="add" autocomplete="off">
     <input id="new-item" class="field" placeholder="Add an item" aria-label="New item" aria-describedby="add-hint" maxlength="300" enterkeyhint="enter">
-    <button class="btn" type="submit">Add</button>
+    <button class="add-btn" type="submit" aria-label="Add item" title="Add item">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </button>
   </form>
   <p class="add-hint" id="add-hint">Tip: paste a list and each line becomes its own item.</p>
 
@@ -498,6 +593,11 @@ div.row{cursor:default}
   <div class="reorder-bar" id="reorder-bar" role="status" hidden>
     <span>Drag the <svg viewBox="0 0 18 18" aria-hidden="true"><g fill="currentColor"><circle cx="6.5" cy="4" r="1.5"/><circle cx="11.5" cy="4" r="1.5"/><circle cx="6.5" cy="9" r="1.5"/><circle cx="11.5" cy="9" r="1.5"/><circle cx="6.5" cy="14" r="1.5"/><circle cx="11.5" cy="14" r="1.5"/></g></svg> handles to move items</span>
     <button type="button" class="btn" id="reorder-done">Done</button>
+  </div>
+
+  <div class="reorder-bar swipe-tip" id="swipe-tip" role="note" hidden>
+    <span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H4m0 0 4-4m-4 4 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Tip: swipe an item left to delete it</span>
+    <button type="button" class="btn" id="swipe-tip-ok">Got it</button>
   </div>
 
   <ul id="items" class="items"></ul>
@@ -629,6 +729,10 @@ div.row{cursor:default}
             <span>Move ticked items to the bottom<small>What’s left to do stays at the top</small></span>
             <input type="checkbox" id="pref-sink" role="switch">
           </label>
+          <label class="menu-item switch" for="pref-buzz" id="pref-buzz-row" hidden>
+            <span>Buzz when a list is finished<small>A short vibration with the celebration</small></span>
+            <input type="checkbox" id="pref-buzz" role="switch">
+          </label>
         </div>
       </section>
       <button type="button" class="btn" id="settings-done">Done</button>
@@ -684,7 +788,7 @@ div.row{cursor:default}
     <section>
       <h3>Restore from a backup</h3>
       <div class="btn-row">
-        <label class="btn ghost" for="bk-file">Choose backup file</label>
+        <button type="button" class="btn ghost" id="bk-choose">Choose backup file</button>
       </div>
       <input type="file" id="bk-file" accept=".json,application/json,text/plain" hidden>
       <textarea id="bk-text" class="field" rows="3" placeholder="…or paste backup text here" aria-label="Backup text" spellcheck="false"></textarea>
@@ -730,7 +834,7 @@ div.row{cursor:default}
     id: uid(), title: 'My checklist', items: [
       { id: uid(), text: 'Add your own item in the box above', done: false },
       { id: uid(), text: 'Tap any item’s text to edit it', done: false },
-      { id: uid(), text: 'Swipe an item left to delete it, or tap the ×', done: false },
+      { id: uid(), text: 'Swipe an item left to delete it (or use the × on a computer)', done: false },
       { id: uid(), text: 'Tap “All lists” to see your lists or start a new one', done: false },
       { id: uid(), text: 'Tick this box to mark it done', done: true }
     ]
@@ -753,18 +857,23 @@ div.row{cursor:default}
   const fresh = !ls.get(KEY) && !ls.get(OLD_KEY); // nothing saved here yet
   let data = load();
   let filter = ls.get('ticklist.filter') || 'all';
-  let prefs = { sinkDone: true };
+  let prefs = { sinkDone: true, buzz: true };
   const sortDone = l => { l.items = [...l.items.filter(i => !i.done), ...l.items.filter(i => i.done)]; };
   if (ls.get('ticklist.prefs')) { try { prefs = { ...prefs, ...JSON.parse(ls.get('ticklist.prefs')) }; } catch {} }
   else { data.lists.forEach(sortDone); ls.set('ticklist.prefs', JSON.stringify(prefs)); } // first run of this version: tidy ticked items to the bottom once
-  let editing = null, query = '', reorderItems = false, reorderLists = false;
+  let editing = null, query = '', reorderItems = false, reorderLists = false, selecting = false;
+  const selected = new Set();
   if (!ls.get('ticklist.since')) ls.set('ticklist.since', new Date().toISOString());
 
   const byId = id => data.lists.find(l => l.id === id);
   const current = () => byId(data.activeId);
   const stats = l => { const done = l.items.filter(i => i.done).length; return { done, total: l.items.length }; };
 
-  function save() { const ok = ls.set(KEY, JSON.stringify(data)); renderStatus(ok); }
+  function save() {
+    const ok = ls.set(KEY, JSON.stringify(data)); renderStatus(ok);
+    // A newer change would be lost by undoing the old one, so the Undo offer ends here
+    if (undoSnap && listsState() !== undoAfter) hideToast();
+  }
   function renderStatus(ok = true) {
     const offline = navigator.onLine === false;
     for (const id of ['status-home', 'status-view']) {
@@ -778,7 +887,8 @@ div.row{cursor:default}
   addEventListener('offline', () => renderStatus());
 
   /* ---------- toast: messages, with optional undo ---------- */
-  let toastTimer = null, undoSnap = null;
+  let toastTimer = null, undoSnap = null, undoAfter = null;
+  const listsState = () => JSON.stringify(data.lists);
   function toast(label, snap) {
     undoSnap = snap || null;
     $('toast-text').textContent = label;
@@ -787,8 +897,8 @@ div.row{cursor:default}
     clearTimeout(toastTimer);
     toastTimer = setTimeout(hideToast, snap ? 7000 : 3500);
   }
-  function withUndo(label, fn) { const snap = JSON.stringify(data); fn(); save(); toast(label, snap); }
-  function hideToast() { $('toast').hidden = true; document.body.classList.remove('toasting'); undoSnap = null; }
+  function withUndo(label, fn) { flushSettle(false); const snap = JSON.stringify(data); fn(); undoSnap = null; save(); toast(label, snap); undoAfter = listsState(); }
+  function hideToast() { $('toast').hidden = true; document.body.classList.remove('toasting'); undoSnap = undoAfter = null; }
   $('toast-undo').addEventListener('click', () => {
     if (!undoSnap) return;
     data = JSON.parse(undoSnap); save(); hideToast();
@@ -844,9 +954,11 @@ div.row{cursor:default}
   const reorderBy = (arr, ids) => { const m = new Map(arr.map(x => [x.id, x])); return ids.map(id => m.get(id)).filter(Boolean); };
 
   /* ---------- navigation: #list-<id> opens a list, no hash shows home ---------- */
-  let openedFromHome = false;
+  let openedFromHome = false, titleFor = null; // titleFor: the list the name box is showing
   function route() {
     editing = null; if (menuSheet.open) closeSheet(menuSheet);
+    if (document.activeElement === $('title')) commitTitle();
+    flushSettle(false);
     const m = location.hash.match(/^#list-(.+)$/);
     const list = m && byId(m[1]);
     if (list) { if (data.activeId !== list.id) reorderItems = false; data.activeId = list.id; save(); showView(); }
@@ -857,7 +969,10 @@ div.row{cursor:default}
     route();
     if (fresh) { $('title').focus(); $('title').select(); }
   }
-  function goHome() { if (openedFromHome) history.back(); else location.hash = ''; }
+  function goHome() {
+    if (openedFromHome) { openedFromHome = false; history.back(); }
+    else { history.replaceState(null, '', location.pathname + location.search); route(); }
+  }
 
   /* ---------- home ---------- */
   function showHome() {
@@ -873,9 +988,20 @@ div.row{cursor:default}
     if (n < 2) reorderLists = false;
     $('reorder-lists').disabled = n < 2;
     $('reorder-lists-hint').textContent = n < 2 ? 'Make at least 2 lists first' : 'Drag lists into a new order';
+    if (n < 2) selecting = false;
+    for (const id of [...selected]) if (!byId(id)) selected.delete(id);
+    $('select-lists').disabled = n < 2;
+    $('select-lists-hint').textContent = n < 2 ? 'Make at least 2 lists first' : 'Choose several lists to delete at once';
     $('reorder-lists-bar').hidden = !reorderLists;
-    $('new-list').hidden = reorderLists;
-    $('search').hidden = n < 6 || reorderLists;
+    $('select-bar').hidden = $('select-actions').hidden = !selecting;
+    document.body.classList.toggle('selecting', selecting);
+    $('new-list').hidden = $('new-list-top').hidden = $('home-more').hidden = reorderLists || selecting;
+    $('search').hidden = n < 6 || reorderLists || selecting;
+    const k = selected.size;
+    $('select-count').textContent = k ? `${plural(k, 'list')} selected` : 'Tap lists to select them';
+    $('select-all').textContent = k === n ? 'Select none' : 'Select all';
+    $('select-delete').disabled = !k;
+    $('select-delete').textContent = k ? `Delete ${plural(k, 'list')}` : 'Delete';
     if ($('search').hidden) { query = ''; $('search').value = ''; }
     const q = query.trim().toLowerCase();
     const shown = data.lists.filter(l => !q || l.title.toLowerCase().includes(q));
@@ -888,6 +1014,10 @@ div.row{cursor:default}
           ${total ? `<span class="mini"><i style="width:${done / total * 100}%"></i></span>` : ''}
         </span>`;
       const own = T.has(l.colour) ? ` class="coloured" style="--row-accent:${T.colours(l.colour).a}"` : '';
+      if (selecting) {
+        const on = selected.has(l.id);
+        return `<li data-list="${esc(l.id)}" class="${on ? 'selected' : ''}"><button type="button" class="row sel-row" role="checkbox" aria-checked="${on}"><span class="pick" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 6.2 4.8 9 10 3.2" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="name">${esc(l.title)}</span>${meta}</button></li>`;
+      }
       return reorderLists
         ? `<li data-list="${esc(l.id)}"${own}><div class="row"><span class="name">${esc(l.title)}</span>${handle(l.title)}${meta}</div></li>`
         : `<li data-list="${esc(l.id)}"${own}><button type="button" class="row"><span class="name">${esc(l.title)}</span><span class="chev" aria-hidden="true">›</span>${meta}</button></li>`;
@@ -895,6 +1025,13 @@ div.row{cursor:default}
   }
   $('lists').addEventListener('click', e => {
     const li = e.target.closest('li[data-list]'); if (!li || reorderLists) return;
+    if (selecting) {
+      const id = li.dataset.list;
+      if (selected.has(id)) selected.delete(id); else selected.add(id);
+      renderHome();
+      $('lists').querySelector(`li[data-list="${CSS.escape(id)}"] .row`)?.focus();
+      return;
+    }
     if (e.target.closest('.row')) openList(li.dataset.list);
   });
   makeSortable($('lists'), 'li[data-list]', 'list', ids => { data.lists = reorderBy(data.lists, ids); save(); renderHome(); });
@@ -914,23 +1051,61 @@ div.row{cursor:default}
     $('lists').querySelector('.handle')?.focus();
   });
   $('reorder-lists-done').addEventListener('click', () => { reorderLists = false; renderHome(); $('home-more').focus(); });
-  $('new-list').addEventListener('click', () => {
+
+  /* ---------- select several lists and delete them together ---------- */
+  function stopSelecting() { selecting = false; selected.clear(); renderHome(); $('home-more').focus(); }
+  $('select-lists').addEventListener('click', () => {
+    closeSheet(homeSheet); selecting = true; reorderLists = false; selected.clear(); query = ''; $('search').value = '';
+    renderHome(); $('lists').querySelector('.row')?.focus();
+  });
+  $('select-cancel').addEventListener('click', stopSelecting);
+  $('select-all').addEventListener('click', () => {
+    if (selected.size === data.lists.length) selected.clear(); else data.lists.forEach(l => selected.add(l.id));
+    renderHome();
+  });
+  const bulkSheet = $('bulk-sheet');
+  $('select-delete').addEventListener('click', () => {
+    const lists = data.lists.filter(l => selected.has(l.id)); if (!lists.length) return;
+    const items = lists.reduce((n, l) => n + l.items.length, 0);
+    const names = lists.slice(0, 3).map(l => `“${l.title}”`);
+    const named = lists.length > 3 ? `${names.join(', ')} and ${lists.length - 3} more` : names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0];
+    $('bulk-title').textContent = `Delete ${plural(lists.length, 'list')}?`;
+    $('bulk-text').textContent = `${named}${items ? `, with ${plural(items, 'item')},` : ''} will be deleted.${lists.length === data.lists.length ? ' That’s all your lists, so you’ll start again with an empty one.' : ''} You can undo this straight afterwards.`;
+    $('bulk-yes').textContent = `Delete ${plural(lists.length, 'list')}`;
+    openSheet(bulkSheet); $('bulk-no').focus();
+  });
+  $('bulk-no').addEventListener('click', () => closeSheet(bulkSheet));
+  $('bulk-yes').addEventListener('click', () => {
+    const k = selected.size;
+    closeSheet(bulkSheet);
+    withUndo(`Deleted ${plural(k, 'list')}`, () => {
+      data.lists = data.lists.filter(l => !selected.has(l.id));
+      if (!data.lists.length) data.lists.push({ id: uid(), title: 'My checklist', items: [] });
+      if (!byId(data.activeId)) data.activeId = data.lists[0].id;
+    });
+    selecting = false; selected.clear(); renderHome();
+  });
+  const newList = () => {
     const l = { id: uid(), title: 'New list', items: [] };
     data.lists.unshift(l); save(); query = ''; $('search').value = ''; reorderLists = false;
     openList(l.id, true);
-  });
+  };
+  $('new-list').addEventListener('click', newList);
+  $('new-list-top').addEventListener('click', newList);
   $('search').addEventListener('input', e => { query = e.target.value; renderHome(); });
 
   /* ---------- one list ---------- */
-  function showView() { $('home').hidden = true; $('view').hidden = false; T.setList(current() && current().colour); renderView(); window.scrollTo(0, 0); }
+  function showView() { selecting = false; selected.clear(); document.body.classList.remove('selecting'); $('home').hidden = true; $('view').hidden = false; T.setList(current() && current().colour); renderView(); renderNudge(); window.scrollTo(0, 0); }
   function change() { save(); renderView(); }
 
   function renderView() {
     const list = current(); if (!list) return showHome();
     document.title = list.title + ' · Tick It';
+    $('view-heading').textContent = list.title;
     const { done, total } = stats(list);
     if (total < 2) reorderItems = false;
-    if (document.activeElement !== $('title')) $('title').value = list.title;
+    if (document.activeElement !== titleEl || titleFor !== list.id) titleEl.value = list.title;
+    titleFor = list.id;
     $('count').textContent = total ? (done === total ? `All ${total} done` : `${done} of ${total} done`) : 'Nothing yet';
     $('fill').style.width = total ? (done / total * 100) + '%' : '0';
     $('share').disabled = !total;
@@ -948,27 +1123,68 @@ div.row{cursor:default}
     $('filters').hidden = reorderItems;
     $('reorder-bar').hidden = !reorderItems;
     $('add').hidden = reorderItems;
-    $('add-hint').hidden = total > 3 || reorderItems;
+    renderSwipeTip(total);
+    $('add-hint').hidden = total > 3 || reorderItems || !$('swipe-tip').hidden; // one tip at a time
     $('items').classList.toggle('reordering', reorderItems);
     document.querySelectorAll('.filters button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === filter)));
 
     const f = reorderItems ? 'all' : filter;
-    const shown = list.items.filter(i => f === 'all' || (f === 'done') === !!i.done);
+    const waiting = new Set(settleQ.map(i => i.id));
+    const shown = list.items.filter(i => f === 'all' || (f === 'done') === !!i.done || waiting.has(i.id));
     if (!shown.length) {
       $('items').innerHTML = `<li class="empty">${total ? (f === 'done' ? 'Nothing ticked off yet.' : 'All done. Nice.') : 'This list is empty. Add the first item above.'}</li>`;
       return;
     }
     $('items').innerHTML = shown.map(i => `
-      <li class="item${i.done ? ' done' : ''}" data-id="${esc(i.id)}">
+      <li class="item${i.done ? ' done' : ''}${justTicked === i.id ? ' just-ticked' : ''}" data-id="${esc(i.id)}">
         <button type="button" class="check" role="checkbox" aria-checked="${!!i.done}" aria-label="${esc(i.text)}">
           <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.2 4.8 9 10 3.2" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         ${editing === i.id
           ? `<input class="edit" id="edit-${esc(i.id)}" value="${esc(i.text)}" aria-label="Edit item" maxlength="300" enterkeyhint="done">`
-          : `<span class="text">${esc(i.text)}</span>`}
+          : `<span class="text"><span class="t">${esc(i.text)}</span></span>`}
         ${reorderItems ? handle(i.text) : `<button type="button" class="del" aria-label="Delete ${esc(i.text)}">×</button>`}
       </li>`).join('');
     if (editing) { const e = $('edit-' + editing); if (e) { e.focus(); e.setSelectionRange(e.value.length, e.value.length); } }
+  }
+
+  /* ---------- ticking: the tick shows straight away; the item glides to its new place a moment later ---------- */
+  const SETTLE_MS = 600;
+  const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let settleQ = [], settleTimer = null, justTicked = null;
+  const wasDone = new Map(); // each waiting item's state before it was first ticked
+  const rowTops = () => Object.fromEntries([...$('items').querySelectorAll('.item')].map(li => [li.dataset.id, li.getBoundingClientRect().top]));
+  // Move ticked items into place. Called after a pause, or straight away before anything else changes the list.
+  function flushSettle(animate) {
+    clearTimeout(settleTimer); settleTimer = null;
+    const q = settleQ; settleQ = []; justTicked = null; wasDone.clear();
+    const list = current();
+    if (!q.length || !list) return;
+    const before = animate && !$('view').hidden ? rowTops() : null;
+    const focusId = document.activeElement && document.activeElement.closest && document.activeElement.closest('#items .item')?.dataset.id;
+    q.forEach(it => { if (list.items.includes(it)) resettle(list, it); });
+    save();
+    if ($('view').hidden) return;
+    renderView();
+    if (focusId) $('items').querySelector(`[data-id="${CSS.escape(focusId)}"] .check`)?.focus({ preventScroll: true });
+    if (!before) return;
+    // Slide each row from where it was to where it is now
+    for (const li of $('items').querySelectorAll('.item')) {
+      const was = before[li.dataset.id];
+      if (was === undefined) { li.classList.add('arriving'); continue; }
+      const dy = was - li.getBoundingClientRect().top;
+      if (Math.abs(dy) < 1) continue;
+      li.style.transition = 'none';
+      li.style.transform = `translateY(${dy}px)`;
+      if (q.some(it => it.id === li.dataset.id)) li.classList.add('gliding');
+    }
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      for (const li of $('items').querySelectorAll('.item[style]')) {
+        li.style.transition = 'transform .34s cubic-bezier(.2,.75,.25,1)';
+        li.style.transform = '';
+        li.addEventListener('transitionend', () => { li.style.transition = ''; li.classList.remove('gliding'); }, { once: true });
+      }
+    }));
   }
 
   // Put a new or re-ticked item in the right place when ticked items sink to the bottom
@@ -987,13 +1203,16 @@ div.row{cursor:default}
   const titleEl = $('title');
   titleEl.addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); titleEl.blur(); newEl.focus(); }
-    if (e.key === 'Escape') { titleEl.value = current().title; titleEl.blur(); }
+    if (e.key === 'Escape') { titleEl.value = (byId(titleFor) || current()).title; titleEl.blur(); }
   });
-  titleEl.addEventListener('blur', () => {
-    const list = current(); if (!list) return;
+  // Save a rename to the list the name box was showing, even if the screen has moved on
+  function commitTitle() {
+    const list = byId(titleFor); if (!list) return;
     const v = titleEl.value.trim() || 'Untitled list';
-    if (v !== list.title) { list.title = v; change(); } else titleEl.value = v;
-  });
+    if (v !== list.title) { list.title = v; save(); }
+    titleEl.value = v;
+  }
+  titleEl.addEventListener('blur', () => { const before = byId(titleFor)?.title; commitTitle(); if (byId(titleFor)?.title !== before && !$('view').hidden) renderView(); });
 
   /* ---------- list options sheet ---------- */
   function showMenuView(name) {
@@ -1001,7 +1220,7 @@ div.row{cursor:default}
     ({ main: () => $('menu-main').querySelector('.menu-item:not(:disabled)'), confirm: () => $('confirm-no'),
        colour: () => $('list-swatches').querySelector('[aria-checked="true"]') })[name]()?.focus();
   }
-  $('more').addEventListener('click', () => { renderView(); openSheet(menuSheet); showMenuView('main'); });
+  $('more').addEventListener('click', () => { flushSettle(false); renderView(); openSheet(menuSheet); showMenuView('main'); });
 
   /* ---------- a list's own colour ---------- */
   const swatchHtml = (key, name, on, extra = '') => {
@@ -1028,7 +1247,7 @@ div.row{cursor:default}
   // Each option closes the sheet, then acts
   const option = (id, fn) => $(id).addEventListener('click', () => { closeSheet(menuSheet); fn(); });
 
-  option('reorder-items', () => { reorderItems = true; editing = null; renderView(); $('items').querySelector('.handle')?.focus(); });
+  option('reorder-items', () => { flushSettle(false); reorderItems = true; editing = null; renderView(); $('items').querySelector('.handle')?.focus(); });
   $('reorder-done').addEventListener('click', () => { reorderItems = false; renderView(); $('more').focus(); });
 
   $('delete-list').addEventListener('click', () => {
@@ -1054,7 +1273,7 @@ div.row{cursor:default}
     if (T.has(src.colour)) copy.colour = src.colour;
     data.lists.splice(data.lists.indexOf(src) + 1, 0, copy);
     save();
-    location.hash = 'list-' + copy.id; route();
+    location.replace('#list-' + copy.id); route();
     toast(`Made a copy of “${src.title}” with everything unticked`);
     titleEl.focus(); titleEl.select();
   });
@@ -1076,6 +1295,7 @@ div.row{cursor:default}
   const newEl = $('new-item');
   $('add').addEventListener('submit', e => {
     e.preventDefault();
+    flushSettle(false);
     const v = newEl.value.trim(); if (!v) return;
     insertItem(current(), { id: uid(), text: v.slice(0, 300), done: false });
     newEl.value = '';
@@ -1116,6 +1336,7 @@ div.row{cursor:default}
 
   document.querySelector('.filters').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b || reorderItems) return;
+    flushSettle(false);
     filter = b.dataset.f; ls.set('ticklist.filter', filter);
     renderView();
   });
@@ -1155,15 +1376,25 @@ div.row{cursor:default}
     if (e.target.closest('.check')) {
       const wasComplete = stats(list).done === list.items.length;
       item.done = !item.done;
-      if (!reorderItems) resettle(list, item);
-      change();
+      if (reorderItems || calm()) { if (!reorderItems) resettle(list, item); change(); }
+      else {
+        // Show the tick now; move the item after a short pause. Ticking again restarts the pause, so quick ticks all move together.
+        settleQ = settleQ.filter(i => i !== item);
+        if (!wasDone.has(item.id)) wasDone.set(item.id, !item.done);
+        // Ticked then unticked before it moved: nothing has changed, so it stays where it is
+        if (wasDone.get(item.id) === item.done) wasDone.delete(item.id); else settleQ.push(item);
+        justTicked = item.id;
+        change();
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(() => flushSettle(true), SETTLE_MS);
+      }
       $('items').querySelector(`[data-id="${CSS.escape(item.id)}"] .check`)?.focus();
       const s = stats(list);
       if (item.done && !wasComplete && s.total && s.done === s.total) celebrate(list);
     } else if (e.target.closest('.del')) {
       deleteItem(list, item);
     } else if (e.target.closest('.text') && editing !== item.id) {
-      editing = item.id; renderView();
+      flushSettle(false); editing = item.id; renderView();
     }
   });
   $('items').addEventListener('keydown', e => {
@@ -1174,6 +1405,23 @@ div.row{cursor:default}
   $('items').addEventListener('focusout', e => { if (e.target.classList.contains('edit') && editing) commitEdit(e.target, true); });
 
   /* ---------- swipe an item left to delete it (touch screens) ---------- */
+  // Phones don't show the × on items, so the first time they see a list, show them the swipe once
+  let peeked = false;
+  const swipeTipDone = () => ls.get('ticklist.swipeTip') === 'done';
+  function renderSwipeTip(total) {
+    const show = matchMedia('(pointer: coarse)').matches && total > 0 && !reorderItems && !swipeTipDone();
+    $('swipe-tip').hidden = !show;
+    if (!show || peeked || calm()) return;
+    peeked = true;
+    setTimeout(() => {
+      const li = $('items').querySelector('.item:not(.done)') || $('items').querySelector('.item');
+      if (!li || $('view').hidden || editing) return;
+      li.classList.add('peek');
+      li.addEventListener('animationend', () => li.classList.remove('peek'), { once: true });
+    }, 700);
+  }
+  function finishSwipeTip() { ls.set('ticklist.swipeTip', 'done'); $('swipe-tip').hidden = true; if (!$('view').hidden) $('add-hint').hidden = (current()?.items.length || 0) > 3 || reorderItems; }
+  $('swipe-tip-ok').addEventListener('click', () => { finishSwipeTip(); newEl.focus({ preventScroll: true }); });
   let sw = null;
   const SWIPE = 90;
   $('items').addEventListener('pointerdown', e => {
@@ -1200,6 +1448,7 @@ div.row{cursor:default}
     suppressClick = Date.now() + 400;
     const list = current(), item = list.items.find(i => i.id === li.dataset.id);
     if (e.type === 'pointerup' && dx < -SWIPE && item) {
+      if (!swipeTipDone()) finishSwipeTip();
       li.style.transition = 'transform .18s ease-in';
       li.style.transform = 'translateX(-110%)';
       setTimeout(() => deleteItem(list, item), 170);
@@ -1214,7 +1463,7 @@ div.row{cursor:default}
   /* ---------- a small celebration when a list is finished ---------- */
   function celebrate(list) {
     toast(`All done! “${list.title}” is complete.`);
-    try { navigator.vibrate && navigator.vibrate([18, 40, 18]); } catch {}
+    if (prefs.buzz) try { navigator.vibrate && navigator.vibrate([18, 40, 18]); } catch {}
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const box = document.createElement('div'); box.className = 'confetti'; box.setAttribute('aria-hidden', 'true');
     const cs = getComputedStyle(document.documentElement);
@@ -1255,6 +1504,9 @@ div.row{cursor:default}
     $('pref-black').checked = !!t.black;
     $('pref-contrast').checked = !!t.contrast;
     $('pref-sink').checked = !!prefs.sinkDone;
+    // Only phones that can vibrate get the buzz switch (iPhones can't vibrate from a web page)
+    $('pref-buzz-row').hidden = !(typeof navigator.vibrate === 'function' && matchMedia('(pointer: coarse)').matches);
+    $('pref-buzz').checked = prefs.buzz !== false;
     // colour screen: everyday colours and seasonal themes on separate tabs
     const tab = colourTab || (pal.season ? 'seasonal' : 'colours');
     const all = Object.entries(T.palettes);
@@ -1314,10 +1566,12 @@ div.row{cursor:default}
   $('pref-contrast').addEventListener('change', e => saveTheme({ contrast: e.target.checked }));
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (!$('home').hidden) renderHome(); if (settingsSheet.open) renderSettings(); });
   $('pref-sink').addEventListener('change', e => {
+    flushSettle(false);
     prefs.sinkDone = e.target.checked; ls.set('ticklist.prefs', JSON.stringify(prefs));
     if (prefs.sinkDone) data.lists.forEach(sortDone);
     save(); if (!$('view').hidden) renderView();
   });
+  $('pref-buzz').addEventListener('change', e => { prefs.buzz = e.target.checked; ls.set('ticklist.prefs', JSON.stringify(prefs)); });
   $('settings-done').addEventListener('click', () => closeSheet(settingsSheet));
 
   /* ---------- backup & restore ---------- */
@@ -1387,6 +1641,7 @@ div.row{cursor:default}
     } else say('bk-restore-msg', 'That doesn’t look like a Tick It backup. Check you copied all of it.', true);
   }
   $('bk-text').addEventListener('input', checkText);
+  $('bk-choose').addEventListener('click', () => $('bk-file').click());
   $('bk-file').addEventListener('change', async e => {
     const file = e.target.files && e.target.files[0]; if (!file) return;
     try { $('bk-text').value = await file.text(); checkText(); }
@@ -1416,13 +1671,13 @@ div.row{cursor:default}
     const ref = Date.parse(last || since) || Date.now();
     const days = Math.floor((Date.now() - ref) / DAY);
     const due = items >= 5 && days >= (last ? 30 : 14) && !(snooze && Date.now() < Date.parse(snooze));
-    $('backup-nudge').hidden = !due;
-    if (due) $('backup-nudge-text').textContent = last
+    const text = last
       ? `It’s been ${days} days since your last backup. A quick backup keeps your lists safe if browser data gets cleared.`
       : 'You haven’t backed up your lists yet. A quick backup keeps them safe if browser data gets cleared.';
+    document.querySelectorAll('.backup-nudge').forEach(n => { n.hidden = !due; if (due) n.querySelector('.nudge-text').textContent = text; });
   }
-  $('nudge-backup').addEventListener('click', openBackup);
-  $('nudge-later').addEventListener('click', () => { ls.set('ticklist.nudgeSnooze', new Date(Date.now() + 14 * DAY).toISOString()); renderNudge(); });
+  document.querySelectorAll('.nudge-backup').forEach(b => b.addEventListener('click', openBackup));
+  document.querySelectorAll('.nudge-later').forEach(b => b.addEventListener('click', () => { ls.set('ticklist.nudgeSnooze', new Date(Date.now() + 14 * DAY).toISOString()); renderNudge(); }));
 
   /* ---------- iPhone home-screen app: it has its own storage, separate from Safari ---------- */
   if (navigator.standalone === true && fresh) ls.set('ticklist.iosNote', 'show');
@@ -1435,9 +1690,20 @@ div.row{cursor:default}
   document.querySelectorAll('.ios-restore').forEach(b => b.addEventListener('click', openBackup));
   renderIosNote();
 
+  // Closing the app or switching away straight after a tick still puts it in place
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushSettle(false); });
+  addEventListener('pagehide', () => flushSettle(false));
+  // Escape leaves select or reorder mode, like it closes the panels
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape' || document.querySelector('dialog[open]')) return;
+    if (selecting) stopSelecting();
+    else if (reorderLists) $('reorder-lists-done').click();
+    else if (reorderItems) $('reorder-done').click();
+  });
+
   /* ---------- start ---------- */
   // Keep two open tabs in step
-  addEventListener('storage', e => { if (e.key === KEY && !editing) { data = load(); route(); } });
+  addEventListener('storage', e => { if (e.key === KEY && !editing) { flushSettle(false); data = load(); route(); } });
   addEventListener('hashchange', route);
 
   // With only one list, skip the home screen and open it straight away.

@@ -7,29 +7,31 @@ A simple checklist that works on your phone or computer. You can keep as many li
 ## What you can do
 
 - **Keep several lists** for groceries, packing, chores or anything else. Each one shows how many items are done.
-- **Add, tick, edit and delete items.** Tap an item's text to change it. On a phone, swipe an item left to delete it.
+- **Add, tick, edit and delete items.** Type in the box and press **Enter** or the round **+**. Tap an item's text to change it. On a phone, swipe an item left to delete it. On a computer, use the **×** that appears when you point at an item.
 - **Paste a whole list at once.** Paste lines copied from a note or message and each line becomes its own item. Bullets, numbers and checkboxes are tidied away, and items marked `[x]` or ☑ arrive ticked.
 - **Share a list** (⋯ → **Share list**). It sends a readable checklist to WhatsApp, Messages, email or anywhere else. Whoever gets it can paste it straight into their own Tick It.
-- **Ticked items move to the bottom**, so what's left to do stays at the top. You can turn this off in Settings.
+- **Ticked items move to the bottom**, so what's left to do stays at the top. The tick draws in, then after a moment the item glides down, so the row under your finger doesn't suddenly change. You can turn this off in Settings, and there's no motion if your phone has **Reduce motion** on.
 - **List options (⋯)** at the top of each list: share it, pick a list colour, reorder items, untick all, clear done items, duplicate the list, or delete it.
 - **Duplicate a list** to reuse it with everything unticked. Handy for packing lists and weekly routines. **Untick all** does the same for the list you're in.
 - **Undo mistakes.** Deleting something shows an **Undo** button for a few seconds.
 - **Reorder** items (⋯ → **Reorder items**) or lists (⋯ → **Reorder lists** on the home screen), then drag the ⠿ handle.
+- **Delete several lists at once:** on the home screen, tap **⋯ → Select lists**, tap the lists you want, then **Delete**.
 - **Filter** to see everything, only what's left to do, or only what's done.
 - **Works offline.** Once you've opened it, it opens and saves without internet.
 - **Choose a theme** in **Settings** (tap **⋯** on any screen, then **Settings**):
   - 16 colours, plus 5 seasonal themes (Spring, Ocean breeze, Autumn, Winter and Festive).
   - Three styles: **Classic**, **Tinted** (the whole page takes on your colour) or **Paper** (notebook paper with handwriting).
   - Light, Dark or match your phone, with **true black** for OLED screens and a **high contrast** option that's easier to read.
+  - On Android phones, turn off the little **buzz** when you finish a list.
 - **Give a list its own colour** (⋯ → **List colour**) so it stands out on the home screen.
 - **Back up and restore** your lists, or move them to another device. It reminds you if you haven't backed up in a while.
 
 ## How to use it
 
 1. Open the link above.
-2. Type an item in the box and press **Add**.
+2. Type an item in the box and press **Enter** or the round **+**.
 3. Tap the box next to an item to tick it off.
-4. Tap **‹ All lists** to see your lists, then the round **+** button in the bottom corner to start another.
+4. Tap **‹ All lists** to see your lists, then the round **+** button in the bottom corner to start another. On a computer, it's **+ New list** at the top.
 
 ### Put it on your home screen
 

@@ -1,6 +1,6 @@
 /* Tick It offline support: keeps a copy of the app on the device so it opens without internet.
    Your lists aren't stored here; they live in the browser's own storage. */
-const CACHE = 'ticklist-v5'; // storage names keep the old 'ticklist' prefix so nothing saved is lost
+const CACHE = 'ticklist-v6'; // storage names keep the old 'ticklist' prefix so nothing saved is lost
 const CORE = ['./', 'manifest.webmanifest', 'favicon.svg', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
