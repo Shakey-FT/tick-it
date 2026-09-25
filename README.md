@@ -29,7 +29,7 @@ A simple checklist that works on your phone or computer. You can keep as many li
 1. Open the link above.
 2. Type an item in the box and press **Add**.
 3. Tap the box next to an item to tick it off.
-4. Tap **‹ All lists** to see your lists, then **+ New list** to start another.
+4. Tap **‹ All lists** to see your lists, then the round **+** button in the bottom corner to start another.
 
 ### Put it on your home screen
 
