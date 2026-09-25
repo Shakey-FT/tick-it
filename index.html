@@ -101,17 +101,18 @@ button,input,textarea{font:inherit;color:inherit}
 .actions{display:flex;gap:8px;align-items:center}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
 
-/* move up / down buttons, shown in reorder mode */
-.mv{flex:none;position:relative;display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--rule);border-radius:9px;background:var(--surface);color:var(--ink);cursor:pointer}
-.mv:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
-.mv:disabled{opacity:.3;cursor:default}
-.mv svg{width:16px;height:16px}
-.movers{display:flex;gap:6px;margin:-6px -4px -6px 0}
+/* drag handle, shown in reorder mode */
+.handle{flex:none;position:relative;display:grid;place-items:center;width:40px;height:40px;margin:-8px -8px -8px 0;border:0;border-radius:9px;background:transparent;color:var(--muted);cursor:grab;touch-action:none}
+.handle:hover{color:var(--accent);background:var(--accent-soft)}
+.handle svg{width:18px;height:18px}
+.dragging{position:relative;z-index:5;box-shadow:0 10px 30px rgba(0,0,0,.22);background:var(--surface)!important;cursor:grabbing;transition:none!important}
+.dragging .handle{cursor:grabbing;color:var(--accent)}
 
 /* ---------- home: all lists ---------- */
 .home-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .home-head p{margin:4px 0 0;color:var(--muted)}
 .lists{list-style:none;margin:0;padding:0;background:var(--surface);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.lists li{background:var(--surface)}
 .lists li+li{border-top:1px solid var(--rule)}
 .row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 14px;width:100%;padding:14px 16px;border:0;background:transparent;text-align:left;cursor:pointer}
 button.row:hover{background:var(--accent-soft)}
@@ -120,7 +121,8 @@ div.row{cursor:default}
 .row .meta{grid-column:1;display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted)}
 .row .mini{flex:1;max-width:140px;height:4px;border-radius:2px;background:var(--rule);overflow:hidden}
 .row .mini i{display:block;height:100%;background:var(--accent)}
-.row .chev,.row .movers{grid-column:2;grid-row:1/span 2}
+.row .chev,.row .handle{grid-column:2;grid-row:1/span 2}
+.row .handle{margin:0 -8px 0 0}
 .row .chev{color:var(--muted);font-size:20px;line-height:1}
 .row .badge{color:var(--accent);font-weight:600}
 .empty{padding:28px 16px;text-align:center;color:var(--muted)}
@@ -143,6 +145,7 @@ div.row{cursor:default}
 
 .add{display:flex;gap:8px}
 .add .field{flex:1;min-width:0}
+.add-hint{margin:-12px 0 0;font-size:12.5px;color:var(--muted)}
 
 .bar-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .filters{display:flex;gap:2px;background:var(--rule);padding:3px;border-radius:9px}
@@ -152,8 +155,11 @@ div.row{cursor:default}
 .links{display:flex;gap:16px;flex-wrap:wrap}
 
 .items{list-style:none;margin:0;padding:0;background:var(--surface);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
-.item{display:flex;align-items:flex-start;gap:14px;padding:14px;min-height:52px;border-top:1px solid var(--rule)}
+.item{display:flex;align-items:flex-start;gap:14px;padding:14px;min-height:52px;border-top:1px solid var(--rule);background:var(--surface);touch-action:pan-y;transition:transform .2s ease}
 .item:first-child{border-top:0}
+/* swipe left to delete: the red shows through on the right as the row slides */
+.item.swiping{transition:none;box-shadow:600px 0 0 var(--danger-soft)}
+.item.swiping.will-delete{box-shadow:600px 0 0 var(--danger)}
 /* tick box looks 24px but its tap area is 44px */
 .check{flex:none;position:relative;width:24px;height:24px;border-radius:6px;border:2px solid var(--muted);background:transparent;cursor:pointer;display:grid;place-items:center;padding:0;transition:background .15s,border-color .15s}
 .check::after{content:"";position:absolute;inset:-10px}
@@ -175,13 +181,14 @@ div.row{cursor:default}
 .status{display:inline-flex;align-items:center;gap:6px}
 .status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .status[data-s="error"]::before{background:var(--danger)}
+.status[data-s="offline"]::before{background:#C9962B}
 .confirm{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border-radius:12px;background:var(--danger-soft);font-size:14px}
 .confirm .grow{flex:1;min-width:12ch}
 .confirm button{border:0;border-radius:8px;padding:8px 12px;font-weight:600;cursor:pointer}
 .confirm .yes{background:var(--danger);color:var(--surface)}
 .confirm .no{background:transparent;text-decoration:underline;text-underline-offset:3px}
 
-/* ---------- sheets (theme, backup) ---------- */
+/* ---------- sheets (settings, backup) ---------- */
 .sheet{border:0;padding:0;margin:auto auto 0;width:100%;max-width:520px;max-height:92vh;background:var(--surface);color:var(--ink);border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.25)}
 @media (min-width:600px){.sheet{margin:auto;border-radius:18px}}
 .sheet::backdrop{background:rgba(0,0,0,.4)}
@@ -202,18 +209,29 @@ div.row{cursor:default}
 .modes{display:flex;gap:2px;background:var(--rule);padding:3px;border-radius:10px}
 .modes button{flex:1;border:0;background:transparent;padding:8px 10px;border-radius:8px;font-weight:500;color:var(--muted);cursor:pointer}
 .modes button[aria-checked="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:14px;cursor:pointer}
+.switch input{appearance:none;flex:none;position:relative;width:46px;height:28px;margin:0;border-radius:14px;background:var(--rule);cursor:pointer;transition:background .15s}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}
+.switch input:checked{background:var(--accent)}
+.switch input:checked::after{transform:translateX(18px)}
+.switch small{display:block;color:var(--muted);font-size:12.5px}
 .sheet-body>.btn{align-self:stretch;padding:12px}
 
-/* ---------- note for a fresh iPhone home-screen app ---------- */
+/* ---------- notes (iPhone app, backup reminder) ---------- */
 .note{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-radius:12px;background:var(--accent-soft);font-size:14px}
 .note p{margin:0}
 .note .btn-row .btn{flex:0 1 auto;padding:8px 14px}
 
-/* ---------- undo toast ---------- */
-.toast{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));margin:0 auto;max-width:520px;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 16px;border-radius:12px;background:var(--ink);color:var(--ground);box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:10}
+/* ---------- toast ---------- */
+.toast{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));margin:0 auto;max-width:520px;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 16px;min-height:52px;border-radius:12px;background:var(--ink);color:var(--ground);box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:10}
 .toast span{flex:1;min-width:0;overflow-wrap:anywhere}
 .toast button{flex:none;border:0;border-radius:8px;padding:8px 14px;background:transparent;color:var(--ground);font-weight:700;cursor:pointer;box-shadow:inset 0 0 0 1.5px currentColor}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- finished-list confetti ---------- */
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:20}
+.confetti i{position:absolute;top:-16px;width:8px;height:13px;border-radius:2px;animation:fall 1.6s cubic-bezier(.3,.6,.6,1) forwards}
+@keyframes fall{to{transform:translate(var(--dx),105vh) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.confetti{display:none}}
 </style>
 </head>
 <body>
@@ -226,7 +244,7 @@ div.row{cursor:default}
       <p id="home-sub"></p>
     </div>
     <div class="actions">
-      <button type="button" class="icon-btn theme-open" aria-label="Change theme" title="Change theme">
+      <button type="button" class="icon-btn settings-open" aria-label="Settings" title="Settings">
         <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 0 0 15c1 0 1.6-.7 1.6-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5h1.8a3.4 3.4 0 0 0 3.4-3.4C17.5 5.5 14.1 2.5 10 2.5Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6.2" cy="9.5" r="1.1" fill="currentColor"/><circle cx="8.6" cy="6.2" r="1.1" fill="currentColor"/><circle cx="12.4" cy="6.2" r="1.1" fill="currentColor"/></svg>
       </button>
       <button type="button" class="btn" id="new-list">+ New list</button>
@@ -237,6 +255,13 @@ div.row{cursor:default}
     <div class="btn-row">
       <button type="button" class="btn ios-restore">Restore a backup</button>
       <button type="button" class="btn ghost ios-dismiss">Got it</button>
+    </div>
+  </div>
+  <div class="note" id="backup-nudge" role="note" hidden>
+    <p id="backup-nudge-text"></p>
+    <div class="btn-row">
+      <button type="button" class="btn" id="nudge-backup">Back up now</button>
+      <button type="button" class="btn ghost" id="nudge-later">Not now</button>
     </div>
   </div>
   <input id="search" class="field" type="search" placeholder="Find a list" aria-label="Find a list" hidden>
@@ -257,14 +282,19 @@ div.row{cursor:default}
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       All lists
     </button>
-    <button type="button" class="icon-btn theme-open" aria-label="Change theme" title="Change theme">
-      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 0 0 15c1 0 1.6-.7 1.6-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5h1.8a3.4 3.4 0 0 0 3.4-3.4C17.5 5.5 14.1 2.5 10 2.5Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6.2" cy="9.5" r="1.1" fill="currentColor"/><circle cx="8.6" cy="6.2" r="1.1" fill="currentColor"/><circle cx="12.4" cy="6.2" r="1.1" fill="currentColor"/></svg>
-    </button>
+    <div class="actions">
+      <button type="button" class="icon-btn" id="share" aria-label="Share this list" title="Share this list">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 12.5V3M6.5 6.5 10 3l3.5 3.5M5 9.5H4.5A1.5 1.5 0 0 0 3 11v4.5A1.5 1.5 0 0 0 4.5 17h11a1.5 1.5 0 0 0 1.5-1.5V11a1.5 1.5 0 0 0-1.5-1.5H15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button type="button" class="icon-btn settings-open" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 0 0 15c1 0 1.6-.7 1.6-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5h1.8a3.4 3.4 0 0 0 3.4-3.4C17.5 5.5 14.1 2.5 10 2.5Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6.2" cy="9.5" r="1.1" fill="currentColor"/><circle cx="8.6" cy="6.2" r="1.1" fill="currentColor"/><circle cx="12.4" cy="6.2" r="1.1" fill="currentColor"/></svg>
+      </button>
+    </div>
   </div>
 
   <header class="head">
     <div class="title-wrap">
-      <input id="title" class="title display" aria-label="List name (tap to rename)" maxlength="80">
+      <input id="title" class="title display" aria-label="List name (tap to rename)" maxlength="80" enterkeyhint="next">
       <svg class="pencil" viewBox="0 0 16 16" aria-hidden="true"><path d="M11 2.5 13.5 5 6 12.5 3 13l.5-3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
     </div>
     <div class="meter"><div class="bar"><i id="fill"></i></div><span id="count" class="count mono"></span></div>
@@ -279,9 +309,10 @@ div.row{cursor:default}
   </div>
 
   <form id="add" class="add" autocomplete="off">
-    <input id="new-item" class="field" placeholder="Add an item" aria-label="New item" maxlength="300" enterkeyhint="enter">
+    <input id="new-item" class="field" placeholder="Add an item" aria-label="New item" aria-describedby="add-hint" maxlength="300" enterkeyhint="enter">
     <button class="btn" type="submit">Add</button>
   </form>
+  <p class="add-hint" id="add-hint">Tip: paste a list and each line becomes its own item.</p>
 
   <div class="bar-row">
     <div class="filters" role="group" aria-label="Show">
@@ -306,14 +337,17 @@ div.row{cursor:default}
 
   <footer class="foot">
     <span id="status-view" class="status">Saved on this device</span>
-    <button type="button" class="link danger" id="delete-list">Delete this list</button>
+    <span class="links">
+      <button type="button" class="link" id="duplicate-list">Duplicate list</button>
+      <button type="button" class="link danger" id="delete-list">Delete this list</button>
+    </span>
   </footer>
 </main>
 
-<!-- Theme picker -->
-<dialog id="theme-sheet" class="sheet" aria-labelledby="theme-title">
+<!-- Settings -->
+<dialog id="settings-sheet" class="sheet" aria-labelledby="settings-title">
   <div class="sheet-body">
-    <h2 id="theme-title">Theme</h2>
+    <h2 id="settings-title">Settings</h2>
     <div>
       <h3>Colour</h3>
       <div id="swatches" class="swatches" role="radiogroup" aria-label="Colour"></div>
@@ -326,7 +360,14 @@ div.row{cursor:default}
         <button type="button" role="radio" data-mode="dark">Dark</button>
       </div>
     </div>
-    <button type="button" class="btn" id="theme-done">Done</button>
+    <div>
+      <h3>Lists</h3>
+      <label class="switch" for="pref-sink">
+        <span>Move ticked items to the bottom<small>What’s left to do stays at the top.</small></span>
+        <input type="checkbox" id="pref-sink" role="switch">
+      </label>
+    </div>
+    <button type="button" class="btn" id="settings-done">Done</button>
   </div>
 </dialog>
 
@@ -363,7 +404,7 @@ div.row{cursor:default}
   </div>
 </dialog>
 
-<!-- Undo -->
+<!-- Messages and undo -->
 <div id="toast" class="toast" role="status" hidden>
   <span id="toast-text"></span>
   <button type="button" id="toast-undo">Undo</button>
@@ -377,6 +418,7 @@ div.row{cursor:default}
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = id => document.getElementById(id);
   const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+  const DAY = 864e5;
   const ls = {
     get(k) { try { return localStorage.getItem(k); } catch { return null; } },
     set(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; } }
@@ -385,26 +427,16 @@ div.row{cursor:default}
   const closeSheet = d => { if (d.close) d.close(); else d.removeAttribute('open'); };
   document.querySelectorAll('.sheet').forEach(d => d.addEventListener('click', e => { if (e.target === d) closeSheet(d); }));
 
-  const ICON_UP = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 10l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  const ICON_DOWN = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  const movers = (i, n, label) => `<span class="movers">
-      <button type="button" class="mv" data-dir="-1" aria-label="Move ${esc(label)} up"${i === 0 ? ' disabled' : ''}>${ICON_UP}</button>
-      <button type="button" class="mv" data-dir="1" aria-label="Move ${esc(label)} down"${i === n - 1 ? ' disabled' : ''}>${ICON_DOWN}</button>
-    </span>`;
-  function move(arr, from, dir) {
-    const to = from + dir;
-    if (to < 0 || to >= arr.length) return false;
-    [arr[from], arr[to]] = [arr[to], arr[from]];
-    return true;
-  }
+  const GRIP = '<svg viewBox="0 0 18 18" aria-hidden="true"><g fill="currentColor"><circle cx="6.5" cy="4" r="1.5"/><circle cx="11.5" cy="4" r="1.5"/><circle cx="6.5" cy="9" r="1.5"/><circle cx="11.5" cy="9" r="1.5"/><circle cx="6.5" cy="14" r="1.5"/><circle cx="11.5" cy="14" r="1.5"/></g></svg>';
+  const handle = label => `<button type="button" class="handle" aria-label="Move ${esc(label)}. Drag, or use the up and down arrow keys">${GRIP}</button>`;
 
   const starter = () => ({
     id: uid(), title: 'My checklist', items: [
-      { id: uid(), text: 'Tick this box to mark it done', done: true },
       { id: uid(), text: 'Add your own item in the box above', done: false },
       { id: uid(), text: 'Tap any item’s text to edit it', done: false },
+      { id: uid(), text: 'Swipe an item left to delete it, or tap the ×', done: false },
       { id: uid(), text: 'Tap “All lists” to see your lists or start a new one', done: false },
-      { id: uid(), text: 'Delete these examples with the × on each row', done: false }
+      { id: uid(), text: 'Tick this box to mark it done', done: true }
     ]
   });
 
@@ -425,31 +457,41 @@ div.row{cursor:default}
   const fresh = !ls.get(KEY) && !ls.get(OLD_KEY); // nothing saved here yet
   let data = load();
   let filter = ls.get('ticklist.filter') || 'all';
+  let prefs = { sinkDone: true };
+  const sortDone = l => { l.items = [...l.items.filter(i => !i.done), ...l.items.filter(i => i.done)]; };
+  if (ls.get('ticklist.prefs')) { try { prefs = { ...prefs, ...JSON.parse(ls.get('ticklist.prefs')) }; } catch {} }
+  else { data.lists.forEach(sortDone); ls.set('ticklist.prefs', JSON.stringify(prefs)); } // first run of this version: tidy ticked items to the bottom once
   let editing = null, query = '', reorderItems = false, reorderLists = false;
+  if (!ls.get('ticklist.since')) ls.set('ticklist.since', new Date().toISOString());
 
   const byId = id => data.lists.find(l => l.id === id);
   const current = () => byId(data.activeId);
   const stats = l => { const done = l.items.filter(i => i.done).length; return { done, total: l.items.length }; };
 
-  function save() {
-    const ok = ls.set(KEY, JSON.stringify(data));
+  function save() { const ok = ls.set(KEY, JSON.stringify(data)); renderStatus(ok); }
+  function renderStatus(ok = true) {
+    const offline = navigator.onLine === false;
     for (const id of ['status-home', 'status-view']) {
-      const el = $(id); el.dataset.s = ok ? 'ok' : 'error';
-      el.textContent = ok ? 'Saved on this device' : 'This browser is blocking storage, so changes will be lost when you close the page';
+      const el = $(id);
+      el.dataset.s = !ok ? 'error' : offline ? 'offline' : 'ok';
+      el.textContent = !ok ? 'This browser is blocking storage, so changes will be lost when you close the page'
+        : offline ? 'Offline · saved on this device' : 'Saved on this device';
     }
   }
+  addEventListener('online', () => renderStatus());
+  addEventListener('offline', () => renderStatus());
 
-  /* ---------- undo ---------- */
+  /* ---------- toast: messages, with optional undo ---------- */
   let toastTimer = null, undoSnap = null;
-  function withUndo(label, fn) {
-    const snap = JSON.stringify(data);
-    fn(); save();
-    undoSnap = snap;
+  function toast(label, snap) {
+    undoSnap = snap || null;
     $('toast-text').textContent = label;
+    $('toast-undo').hidden = !snap;
     $('toast').hidden = false;
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(hideToast, 7000);
+    toastTimer = setTimeout(hideToast, snap ? 7000 : 3500);
   }
+  function withUndo(label, fn) { const snap = JSON.stringify(data); fn(); save(); toast(label, snap); }
   function hideToast() { $('toast').hidden = true; undoSnap = null; }
   $('toast-undo').addEventListener('click', () => {
     if (!undoSnap) return;
@@ -457,6 +499,53 @@ div.row{cursor:default}
     if (!byId(data.activeId)) data.activeId = data.lists[0].id;
     route();
   });
+
+  /* ---------- drag to reorder (with keyboard arrows on the handle) ---------- */
+  function makeSortable(container, rowSel, key, onDone) {
+    let drag = null;
+    container.addEventListener('pointerdown', e => {
+      const h = e.target.closest('.handle'); if (!h || e.button > 0) return;
+      const row = h.closest(rowSel); if (!row) return;
+      e.preventDefault();
+      try { h.setPointerCapture(e.pointerId); } catch {}
+      drag = { row, id: e.pointerId, lastY: e.clientY, offset: 0 };
+      row.classList.add('dragging');
+    });
+    container.addEventListener('pointermove', e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      drag.offset += e.clientY - drag.lastY; drag.lastY = e.clientY;
+      const row = drag.row;
+      const prev = row.previousElementSibling, next = row.nextElementSibling;
+      if (drag.offset < 0 && prev && prev.matches(rowSel)) {
+        const h = prev.getBoundingClientRect().height;
+        if (-drag.offset > h / 2) { container.insertBefore(row, prev); drag.offset += h; }
+      } else if (drag.offset > 0 && next && next.matches(rowSel)) {
+        const h = next.getBoundingClientRect().height;
+        if (drag.offset > h / 2) { container.insertBefore(next, row); drag.offset -= h; }
+      }
+      row.style.transform = `translateY(${drag.offset}px)`;
+      if (e.clientY < 70) scrollBy(0, -10); else if (e.clientY > innerHeight - 70) scrollBy(0, 10);
+    });
+    const end = e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const { row } = drag; drag = null;
+      row.classList.remove('dragging'); row.style.transform = '';
+      onDone([...container.querySelectorAll(rowSel)].map(r => r.dataset[key]), row.dataset[key]);
+    };
+    container.addEventListener('pointerup', end);
+    container.addEventListener('pointercancel', end);
+    container.addEventListener('keydown', e => {
+      const h = e.target.closest('.handle'); if (!h || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+      e.preventDefault();
+      const row = h.closest(rowSel), rows = [...container.querySelectorAll(rowSel)], i = rows.indexOf(row), j = i + (e.key === 'ArrowUp' ? -1 : 1);
+      if (j < 0 || j >= rows.length) return;
+      const order = rows.map(r => r.dataset[key]);
+      [order[i], order[j]] = [order[j], order[i]];
+      onDone(order, row.dataset[key]);
+      container.querySelector(`${rowSel}[data-${key}="${CSS.escape(row.dataset[key])}"] .handle`)?.focus();
+    });
+  }
+  const reorderBy = (arr, ids) => { const m = new Map(arr.map(x => [x.id, x])); return ids.map(id => m.get(id)).filter(Boolean); };
 
   /* ---------- navigation: #list-<id> opens a list, no hash shows home ---------- */
   let openedFromHome = false;
@@ -478,7 +567,7 @@ div.row{cursor:default}
   function showHome() {
     $('view').hidden = true; $('home').hidden = false;
     document.title = 'My Tick List';
-    renderHome();
+    renderHome(); renderNudge();
   }
   function renderHome() {
     const n = data.lists.length;
@@ -493,7 +582,7 @@ div.row{cursor:default}
     const q = query.trim().toLowerCase();
     const shown = data.lists.filter(l => !q || l.title.toLowerCase().includes(q));
     if (!shown.length) { $('lists').innerHTML = `<li class="empty">No list matches “${esc(query.trim())}”.</li>`; return; }
-    $('lists').innerHTML = shown.map((l, i) => {
+    $('lists').innerHTML = shown.map(l => {
       const { done, total } = stats(l);
       const complete = total && done === total;
       const meta = `<span class="meta">
@@ -501,18 +590,15 @@ div.row{cursor:default}
           ${total ? `<span class="mini"><i style="width:${done / total * 100}%"></i></span>` : ''}
         </span>`;
       return reorderLists
-        ? `<li><div class="row" data-list="${esc(l.id)}"><span class="name">${esc(l.title)}</span>${movers(i, shown.length, l.title)}${meta}</div></li>`
-        : `<li><button type="button" class="row" data-list="${esc(l.id)}"><span class="name">${esc(l.title)}</span><span class="chev" aria-hidden="true">›</span>${meta}</button></li>`;
+        ? `<li data-list="${esc(l.id)}"><div class="row"><span class="name">${esc(l.title)}</span>${handle(l.title)}${meta}</div></li>`
+        : `<li data-list="${esc(l.id)}"><button type="button" class="row"><span class="name">${esc(l.title)}</span><span class="chev" aria-hidden="true">›</span>${meta}</button></li>`;
     }).join('');
   }
   $('lists').addEventListener('click', e => {
-    const mv = e.target.closest('.mv');
-    const row = e.target.closest('.row'); if (!row) return;
-    if (mv) {
-      const idx = data.lists.findIndex(l => l.id === row.dataset.list), dir = +mv.dataset.dir;
-      if (move(data.lists, idx, dir)) { save(); renderHome(); refocusMover($('lists'), `[data-list="${CSS.escape(row.dataset.list)}"]`, dir); }
-    } else if (!reorderLists) openList(row.dataset.list);
+    const li = e.target.closest('li[data-list]'); if (!li || reorderLists) return;
+    if (e.target.closest('.row')) openList(li.dataset.list);
   });
+  makeSortable($('lists'), 'li[data-list]', 'list', ids => { data.lists = reorderBy(data.lists, ids); save(); renderHome(); });
   $('reorder-lists').addEventListener('click', () => { reorderLists = !reorderLists; renderHome(); });
   $('new-list').addEventListener('click', () => {
     const l = { id: uid(), title: 'New list', items: [] };
@@ -520,14 +606,6 @@ div.row{cursor:default}
     openList(l.id, true);
   });
   $('search').addEventListener('input', e => { query = e.target.value; renderHome(); });
-
-  // After a move, keep focus on the same arrow (or its partner if that end is now reached)
-  function refocusMover(container, sel, dir) {
-    const r = container.querySelector(sel); if (!r) return;
-    const same = r.querySelector(`.mv[data-dir="${dir}"]`), other = r.querySelector(`.mv[data-dir="${-dir}"]`);
-    (same && !same.disabled ? same : other)?.focus();
-    r.scrollIntoView({ block: 'nearest' });
-  }
 
   /* ---------- one list ---------- */
   function showView() { $('home').hidden = true; $('view').hidden = false; renderView(); window.scrollTo(0, 0); }
@@ -539,14 +617,16 @@ div.row{cursor:default}
     const { done, total } = stats(list);
     if (total < 2) reorderItems = false;
     if (document.activeElement !== $('title')) $('title').value = list.title;
-    $('count').textContent = total ? `${done} of ${total} done` : 'Nothing yet';
+    $('count').textContent = total ? (done === total ? `All ${total} done` : `${done} of ${total} done`) : 'Nothing yet';
     $('fill').style.width = total ? (done / total * 100) + '%' : '0';
     $('clear').disabled = !done; $('clear').textContent = done ? `Clear done (${done})` : 'Clear done';
     $('reset').disabled = !done;
+    $('share').disabled = !total;
     $('reorder-items').hidden = total < 2;
     $('reorder-items').textContent = reorderItems ? 'Done reordering' : 'Reorder';
     $('reorder-items').classList.toggle('on', reorderItems);
     $('reset').hidden = $('clear').hidden = reorderItems;
+    $('add-hint').hidden = total > 3 || reorderItems;
     $('items').classList.toggle('reordering', reorderItems);
     document.querySelectorAll('.filters button').forEach(b => {
       b.setAttribute('aria-pressed', String(reorderItems ? b.dataset.f === 'all' : b.dataset.f === filter));
@@ -559,7 +639,7 @@ div.row{cursor:default}
       $('items').innerHTML = `<li class="empty">${total ? (f === 'done' ? 'Nothing ticked off yet.' : 'All done. Nice.') : 'This list is empty. Add the first item above.'}</li>`;
       return;
     }
-    $('items').innerHTML = shown.map((i, idx) => `
+    $('items').innerHTML = shown.map(i => `
       <li class="item${i.done ? ' done' : ''}" data-id="${esc(i.id)}">
         <button type="button" class="check" role="checkbox" aria-checked="${!!i.done}" aria-label="${esc(i.text)}">
           <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.2 4.8 9 10 3.2" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -567,16 +647,27 @@ div.row{cursor:default}
         ${editing === i.id
           ? `<input class="edit" id="edit-${esc(i.id)}" value="${esc(i.text)}" aria-label="Edit item" maxlength="300" enterkeyhint="done">`
           : `<span class="text">${esc(i.text)}</span>`}
-        ${reorderItems ? movers(idx, shown.length, i.text) : `<button type="button" class="del" aria-label="Delete ${esc(i.text)}">×</button>`}
+        ${reorderItems ? handle(i.text) : `<button type="button" class="del" aria-label="Delete ${esc(i.text)}">×</button>`}
       </li>`).join('');
     if (editing) { const e = $('edit-' + editing); if (e) { e.focus(); e.setSelectionRange(e.value.length, e.value.length); } }
+  }
+
+  // Put a new or re-ticked item in the right place when ticked items sink to the bottom
+  function insertItem(list, item) {
+    const firstDone = prefs.sinkDone && !item.done ? list.items.findIndex(i => i.done) : -1;
+    if (firstDone === -1) list.items.push(item); else list.items.splice(firstDone, 0, item);
+  }
+  function resettle(list, item) {
+    if (!prefs.sinkDone) return;
+    list.items.splice(list.items.indexOf(item), 1);
+    insertItem(list, item);
   }
 
   $('back').addEventListener('click', goHome);
 
   const titleEl = $('title');
   titleEl.addEventListener('keydown', e => {
-    if (e.key === 'Enter') titleEl.blur();
+    if (e.key === 'Enter') { e.preventDefault(); titleEl.blur(); newEl.focus(); }
     if (e.key === 'Escape') { titleEl.value = current().title; titleEl.blur(); }
   });
   titleEl.addEventListener('blur', () => {
@@ -601,14 +692,68 @@ div.row{cursor:default}
     $('confirm').hidden = true; goHome();
   });
 
+  $('duplicate-list').addEventListener('click', () => {
+    const src = current();
+    const copy = { id: uid(), title: `${src.title} (copy)`.slice(0, 80), items: src.items.map(i => ({ id: uid(), text: i.text, done: false })) };
+    data.lists.splice(data.lists.indexOf(src) + 1, 0, copy);
+    save();
+    location.hash = 'list-' + copy.id; route();
+    toast(`Made a copy of “${src.title}” with everything unticked`);
+    titleEl.focus(); titleEl.select();
+  });
+
+  /* ---------- sharing a list as readable text ---------- */
+  const listAsText = l => [l.title, ...l.items.map(i => `${i.done ? '☑' : '☐'} ${i.text}`)].join('\n');
+  $('share').addEventListener('click', async () => {
+    const l = current(), text = listAsText(l);
+    if (navigator.share) {
+      try { await navigator.share({ title: l.title, text }); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; } // closed the share menu
+    }
+    try { await navigator.clipboard.writeText(text); toast('List copied. Paste it into a message or note.'); }
+    catch { toast('Sharing isn’t available in this browser.'); }
+  });
+
+  /* ---------- adding items, including pasting several lines at once ---------- */
   const newEl = $('new-item');
   $('add').addEventListener('submit', e => {
     e.preventDefault();
     const v = newEl.value.trim(); if (!v) return;
-    current().items.push({ id: uid(), text: v, done: false });
+    insertItem(current(), { id: uid(), text: v.slice(0, 300), done: false });
     newEl.value = '';
     if (filter === 'done') { filter = 'all'; ls.set('ticklist.filter', filter); }
     change(); newEl.focus();
+  });
+
+  const MARK = /^\s*(?:[-*•·▪◦‣>]|\d{1,3}[.)]|\[(?:\s|x|X|✓)?\]|[☐☑☒✅✔✓□■])\s*/;
+  const DONE_MARK = /^\s*(?:[-*•]\s*)?(?:\[(?:x|X|✓)\]|[☑☒✅✔✓])/;
+  function parseLines(text) {
+    const lines = text.split(/\r?\n/).map(s => s.replace(/\t/g, ' ').trimEnd()).filter(s => s.trim());
+    return lines.map(line => {
+      const done = DONE_MARK.test(line);
+      let t = line, marked = false;
+      for (let k = 0; k < 2 && MARK.test(t); k++) { t = t.replace(MARK, ''); marked = true; }
+      return { text: t.trim().slice(0, 300), done, marked };
+    }).filter(x => x.text);
+  }
+  newEl.addEventListener('paste', e => {
+    const text = e.clipboardData && e.clipboardData.getData('text');
+    if (!text || !/\n/.test(text.trim())) return; // one line: paste as normal
+    e.preventDefault();
+    let rows = parseLines(text);
+    const list = current();
+    // A shared list starts with its name on a line of its own
+    let renamed = false;
+    if (rows.length > 1 && !rows[0].marked && rows.slice(1).every(r => r.marked)) {
+      const head = rows.shift();
+      if (!list.items.length && /^(New list|Untitled list|My checklist)$/.test(list.title)) { list.title = head.text.slice(0, 80); renamed = true; }
+    }
+    if (!rows.length) return;
+    withUndo(`Added ${plural(rows.length, 'item')}${renamed ? ` to “${list.title}”` : ''}`, () => {
+      rows.forEach(r => insertItem(list, { id: uid(), text: r.text, done: r.done }));
+    });
+    if (filter === 'done') { filter = 'all'; ls.set('ticklist.filter', filter); }
+    renderView(); newEl.focus();
   });
 
   document.querySelector('.filters').addEventListener('click', e => {
@@ -618,6 +763,7 @@ div.row{cursor:default}
   });
 
   $('reorder-items').addEventListener('click', () => { reorderItems = !reorderItems; editing = null; renderView(); });
+  makeSortable($('items'), '.item', 'id', ids => { const l = current(); l.items = reorderBy(l.items, ids); change(); });
   $('clear').addEventListener('click', () => {
     const n = stats(current()).done;
     withUndo(`Cleared ${plural(n, 'done item')}`, () => { current().items = current().items.filter(i => !i.done); });
@@ -639,20 +785,27 @@ div.row{cursor:default}
     renderView();
   }
 
+  function deleteItem(list, item) {
+    withUndo(`Deleted “${item.text}”`, () => { list.items.splice(list.items.indexOf(item), 1); });
+    renderView();
+  }
+
+  let suppressClick = 0;
   $('items').addEventListener('click', e => {
-    const li = e.target.closest('.item'); if (!li) return;
-    const list = current(), idx = list.items.findIndex(i => i.id === li.dataset.id), item = list.items[idx]; if (!item) return;
-    const mv = e.target.closest('.mv');
-    if (mv) {
-      const dir = +mv.dataset.dir;
-      if (move(list.items, idx, dir)) { change(); refocusMover($('items'), `[data-id="${CSS.escape(item.id)}"]`, dir); }
-    } else if (e.target.closest('.check')) {
-      item.done = !item.done; change();
+    if (Date.now() < suppressClick) return;
+    const li = e.target.closest('.item'); if (!li || reorderItems && !e.target.closest('.check')) return;
+    const list = current(), item = list.items.find(i => i.id === li.dataset.id); if (!item) return;
+    if (e.target.closest('.check')) {
+      const wasComplete = stats(list).done === list.items.length;
+      item.done = !item.done;
+      if (!reorderItems) resettle(list, item);
+      change();
       $('items').querySelector(`[data-id="${CSS.escape(item.id)}"] .check`)?.focus();
+      const s = stats(list);
+      if (item.done && !wasComplete && s.total && s.done === s.total) celebrate(list);
     } else if (e.target.closest('.del')) {
-      withUndo(`Deleted “${item.text}”`, () => { list.items.splice(idx, 1); });
-      renderView();
-    } else if (e.target.closest('.text') && editing !== item.id && !reorderItems) {
+      deleteItem(list, item);
+    } else if (e.target.closest('.text') && editing !== item.id) {
       editing = item.id; renderView();
     }
   });
@@ -663,26 +816,91 @@ div.row{cursor:default}
   });
   $('items').addEventListener('focusout', e => { if (e.target.classList.contains('edit') && editing) commitEdit(e.target, true); });
 
-  /* ---------- theme picker ---------- */
-  const T = window.tickTheme, themeSheet = $('theme-sheet');
-  function renderTheme() {
+  /* ---------- swipe an item left to delete it (touch screens) ---------- */
+  let sw = null;
+  const SWIPE = 90;
+  $('items').addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'touch' || reorderItems || editing || e.target.closest('.handle')) return;
+    const li = e.target.closest('.item'); if (!li) return;
+    sw = { li, id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, active: false };
+  });
+  $('items').addEventListener('pointermove', e => {
+    if (!sw || e.pointerId !== sw.id) return;
+    const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+    if (!sw.active) {
+      if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { sw = null; return; } // scrolling
+      if (dx < -12 && Math.abs(dx) > Math.abs(dy)) { sw.active = true; sw.li.classList.add('swiping'); try { sw.li.setPointerCapture(e.pointerId); } catch {} }
+      else return;
+    }
+    sw.dx = Math.min(0, dx);
+    sw.li.style.transform = `translateX(${sw.dx}px)`;
+    sw.li.classList.toggle('will-delete', sw.dx < -SWIPE);
+  });
+  const swipeEnd = e => {
+    if (!sw || e.pointerId !== sw.id) return;
+    const { li, active, dx } = sw; sw = null;
+    if (!active) return;
+    suppressClick = Date.now() + 400;
+    const list = current(), item = list.items.find(i => i.id === li.dataset.id);
+    if (e.type === 'pointerup' && dx < -SWIPE && item) {
+      li.style.transition = 'transform .18s ease-in';
+      li.style.transform = 'translateX(-110%)';
+      setTimeout(() => deleteItem(list, item), 170);
+    } else {
+      li.classList.remove('swiping', 'will-delete');
+      li.style.transform = '';
+    }
+  };
+  $('items').addEventListener('pointerup', swipeEnd);
+  $('items').addEventListener('pointercancel', swipeEnd);
+
+  /* ---------- a small celebration when a list is finished ---------- */
+  function celebrate(list) {
+    toast(`All done! “${list.title}” is complete.`);
+    try { navigator.vibrate && navigator.vibrate([18, 40, 18]); } catch {}
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const box = document.createElement('div'); box.className = 'confetti'; box.setAttribute('aria-hidden', 'true');
+    const cs = getComputedStyle(document.documentElement);
+    const colours = [cs.getPropertyValue('--accent'), '#E5B955', '#F29BB4', '#8FB2F0', '#7CC3A3', '#F0987A'];
+    for (let i = 0; i < 42; i++) {
+      const p = document.createElement('i');
+      p.style.left = Math.random() * 100 + '%';
+      p.style.background = colours[i % colours.length];
+      p.style.animationDelay = Math.random() * .35 + 's';
+      p.style.setProperty('--dx', (Math.random() * 160 - 80) + 'px');
+      p.style.setProperty('--r', (Math.random() * 900 - 450) + 'deg');
+      box.append(p);
+    }
+    document.body.append(box);
+    setTimeout(() => box.remove(), 2400);
+  }
+
+  /* ---------- settings: theme and list behaviour ---------- */
+  const T = window.tickTheme, settingsSheet = $('settings-sheet');
+  function renderSettings() {
     const t = T.read(), accent = T.palettes[t.accent] ? t.accent : 'green', mode = t.mode || 'system';
     const showDark = document.documentElement.dataset.theme === 'dark';
     $('swatches').innerHTML = Object.entries(T.palettes).map(([key, p]) =>
       `<button type="button" class="swatch" role="radio" data-accent="${key}" aria-checked="${key === accent}">
         <i style="background:${(showDark ? p.dark : p.light)[5]}"></i>${p.name}</button>`).join('');
     document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === mode)));
+    $('pref-sink').checked = !!prefs.sinkDone;
   }
-  document.querySelectorAll('.theme-open').forEach(b => b.addEventListener('click', () => { renderTheme(); openSheet(themeSheet); }));
+  document.querySelectorAll('.settings-open').forEach(b => b.addEventListener('click', () => { renderSettings(); openSheet(settingsSheet); }));
   $('swatches').addEventListener('click', e => {
     const s = e.target.closest('.swatch'); if (!s) return;
-    T.save({ ...T.read(), accent: s.dataset.accent }); renderTheme();
+    T.save({ ...T.read(), accent: s.dataset.accent }); renderSettings();
   });
   $('modes').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
-    T.save({ ...T.read(), mode: b.dataset.mode }); renderTheme();
+    T.save({ ...T.read(), mode: b.dataset.mode }); renderSettings();
   });
-  $('theme-done').addEventListener('click', () => closeSheet(themeSheet));
+  $('pref-sink').addEventListener('change', e => {
+    prefs.sinkDone = e.target.checked; ls.set('ticklist.prefs', JSON.stringify(prefs));
+    if (prefs.sinkDone) data.lists.forEach(sortDone);
+    save(); if (!$('view').hidden) renderView();
+  });
+  $('settings-done').addEventListener('click', () => closeSheet(settingsSheet));
 
   /* ---------- backup & restore ---------- */
   const bkSheet = $('backup-sheet');
@@ -692,7 +910,7 @@ div.row{cursor:default}
     return JSON.stringify({ app: 'tick-list', version: 2, saved: new Date().toISOString(),
       lists: data.lists.map(l => ({ title: l.title, items: l.items.map(i => ({ text: i.text, done: !!i.done })) })) }, null, 1);
   }
-  function markBackedUp() { ls.set('ticklist.lastBackup', new Date().toISOString()); renderLastBackup(); }
+  function markBackedUp() { ls.set('ticklist.lastBackup', new Date().toISOString()); renderLastBackup(); renderNudge(); }
   function renderLastBackup() {
     const t = ls.get('ticklist.lastBackup');
     $('bk-last').textContent = t ? `Last backup: ${new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}` : 'You haven’t made a backup on this device yet.';
@@ -773,6 +991,21 @@ div.row{cursor:default}
     finishRestore(`Replaced your lists with ${plural(lists.length, 'list')} from the backup`, () => { data.lists = lists; data.activeId = lists[0].id; });
   });
 
+  /* ---------- backup reminder ---------- */
+  function renderNudge() {
+    const last = ls.get('ticklist.lastBackup'), since = ls.get('ticklist.since'), snooze = ls.get('ticklist.nudgeSnooze');
+    const items = data.lists.reduce((n, l) => n + l.items.length, 0);
+    const ref = Date.parse(last || since) || Date.now();
+    const days = Math.floor((Date.now() - ref) / DAY);
+    const due = items >= 5 && days >= (last ? 30 : 14) && !(snooze && Date.now() < Date.parse(snooze));
+    $('backup-nudge').hidden = !due;
+    if (due) $('backup-nudge-text').textContent = last
+      ? `It’s been ${days} days since your last backup. A quick backup keeps your lists safe if browser data gets cleared.`
+      : 'You haven’t backed up your lists yet. A quick backup keeps them safe if browser data gets cleared.';
+  }
+  $('nudge-backup').addEventListener('click', openBackup);
+  $('nudge-later').addEventListener('click', () => { ls.set('ticklist.nudgeSnooze', new Date(Date.now() + 14 * DAY).toISOString()); renderNudge(); });
+
   /* ---------- iPhone home-screen app: it has its own storage, separate from Safari ---------- */
   if (navigator.standalone === true && fresh) ls.set('ticklist.iosNote', 'show');
   function renderIosNote() {
@@ -786,13 +1019,18 @@ div.row{cursor:default}
 
   /* ---------- start ---------- */
   // Keep two open tabs in step
-  window.addEventListener('storage', e => { if (e.key === KEY && !editing) { data = load(); route(); } });
-  window.addEventListener('hashchange', route);
+  addEventListener('storage', e => { if (e.key === KEY && !editing) { data = load(); route(); } });
+  addEventListener('hashchange', route);
 
   // With only one list, skip the home screen and open it straight away.
   if (!location.hash && data.lists.length === 1) history.replaceState(null, '', '#list-' + data.lists[0].id);
   save();
   route();
+
+  // Works offline: keep a copy of the app on the device
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
 })();
 </script>
 </body>

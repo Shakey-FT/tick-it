@@ -7,13 +7,17 @@ A simple checklist that works on your phone or computer. You can keep as many li
 ## What you can do
 
 - **Keep several lists** for groceries, packing, chores or anything else. Each one shows how many items are done.
-- **Add, tick, edit and delete items.** Tap an item's text to change it.
+- **Add, tick, edit and delete items.** Tap an item's text to change it. On a phone, swipe an item left to delete it.
+- **Paste a whole list at once.** Paste lines copied from a note or message and each line becomes its own item. Bullets, numbers and checkboxes are tidied away, and items marked `[x]` or ☑ arrive ticked.
+- **Share a list** with the share button. It sends a readable checklist to WhatsApp, Messages, email or anywhere else. Whoever gets it can paste it straight into their own Tick List.
+- **Ticked items move to the bottom**, so what's left to do stays at the top. You can turn this off in Settings.
+- **Duplicate a list** to reuse it with everything unticked. Handy for packing lists and weekly routines. **Untick all** does the same for the list you're in.
 - **Undo mistakes.** Deleting something shows an **Undo** button for a few seconds.
-- **Reuse a list** with **Untick all**, which clears the ticks and keeps the items. Handy for packing lists and weekly routines.
-- **Reorder** items and lists with the ↑ ↓ arrows.
+- **Reorder** items and lists: tap **Reorder**, then drag the handle.
 - **Filter** to see everything, only what's left to do, or only what's done.
-- **Choose a theme** with the palette button: 7 colours, plus Light, Dark or match your phone.
-- **Back up and restore** your lists, or move them to another device.
+- **Works offline.** Once you've opened it, it opens and saves without internet.
+- **Choose a theme** in Settings: 7 colours, plus Light, Dark or match your phone.
+- **Back up and restore** your lists, or move them to another device. It reminds you if you haven't backed up in a while.
 
 ## How to use it
 
@@ -60,4 +64,4 @@ This is also how you move your lists to a new phone.
 
 ## About this project
 
-The whole app is a single file, [`index.html`](index.html), hosted free on GitHub Pages. To make your own copy, fork this repo and turn on **Settings → Pages** (branch `main`, folder `/root`).
+The whole app is a single file, [`index.html`](index.html), plus [`sw.js`](sw.js), which keeps a copy on your device so it works offline. It's hosted free on GitHub Pages. To make your own copy, fork this repo and turn on **Settings → Pages** (branch `main`, folder `/root`).
