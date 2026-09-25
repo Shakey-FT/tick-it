@@ -11,13 +11,17 @@ A simple checklist that works on your phone or computer. You can keep as many li
 - **Paste a whole list at once.** Paste lines copied from a note or message and each line becomes its own item. Bullets, numbers and checkboxes are tidied away, and items marked `[x]` or ☑ arrive ticked.
 - **Share a list** with the share button. It sends a readable checklist to WhatsApp, Messages, email or anywhere else. Whoever gets it can paste it straight into their own Tick List.
 - **Ticked items move to the bottom**, so what's left to do stays at the top. You can turn this off in Settings.
-- **List options (⋯)** at the top of each list: reorder items, untick all, clear done items, duplicate the list, or delete it.
+- **List options (⋯)** at the top of each list: pick a list colour, reorder items, untick all, clear done items, duplicate the list, or delete it.
 - **Duplicate a list** to reuse it with everything unticked. Handy for packing lists and weekly routines. **Untick all** does the same for the list you're in.
 - **Undo mistakes.** Deleting something shows an **Undo** button for a few seconds.
 - **Reorder** items (⋯ → **Reorder items**) or lists (⋯ → **Reorder lists** on the home screen), then drag the ⠿ handle.
 - **Filter** to see everything, only what's left to do, or only what's done.
 - **Works offline.** Once you've opened it, it opens and saves without internet.
-- **Choose a theme** in Settings: 7 colours, plus Light, Dark or match your phone.
+- **Choose a theme** in Settings:
+  - 16 colours, plus 5 seasonal themes (Spring, Ocean breeze, Autumn, Winter and Festive).
+  - Three styles: **Classic**, **Tinted** (the whole page takes on your colour) or **Paper** (notebook paper with handwriting).
+  - Light, Dark or match your phone, with **true black** for OLED screens and a **high contrast** option that's easier to read.
+- **Give a list its own colour** (⋯ → **List colour**) so it stands out on the home screen.
 - **Back up and restore** your lists, or move them to another device. It reminds you if you haven't backed up in a while.
 
 ## How to use it

@@ -14,46 +14,111 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script>
-/* Themes: applied before the page paints so there's no flash of the default colour. */
+/* Themes: applied before the page paints so there's no flash of the default colour.
+   Each palette is [ground, surface, ink, muted, rule, accent, accent-ink, accent-soft] for light and dark. */
 (() => {
   const P = {
     green:  { name: 'Forest',   light: ['#F4F6F2','#FFFFFF','#1B2420','#65716B','#DCE2DB','#2E6A53','#FFFFFF','#E2EEE7'], dark: ['#121614','#1A201D','#E3E9E5','#8D9A93','#2B3430','#7CC3A3','#0F1A15','#1F3029'] },
+    mint:   { name: 'Mint',     light: ['#F1F8F5','#FFFFFF','#16241F','#5F736B','#D5E6DF','#1B8067','#FFFFFF','#D9F2E8'], dark: ['#0F1714','#16211D','#E0EDE8','#88A198','#263631','#6FE0B8','#062018','#183A30'] },
+    teal:   { name: 'Lagoon',   light: ['#F2F6F6','#FFFFFF','#172324','#61716F','#D8E2E1','#1D6E6E','#FFFFFF','#DDEEEC'], dark: ['#101616','#182020','#E1EAE9','#8A9B99','#2A3433','#6FCBC4','#0B1A19','#1C3231'] },
+    sky:    { name: 'Sky',      light: ['#F2F7FB','#FFFFFF','#15212B','#5F6F7D','#D6E2EC','#1F74B8','#FFFFFF','#DDEDF9'], dark: ['#0F151A','#172029','#E0E9F1','#8898A7','#27333E','#7CC4F5','#07192A','#1A2F40'] },
     blue:   { name: 'Ocean',    light: ['#F3F5F8','#FFFFFF','#1A2130','#646E80','#DAE0E9','#2F5BA8','#FFFFFF','#E3EAF6'], dark: ['#111419','#191E26','#E2E7EF','#8D97A8','#2A313D','#8FB2F0','#0E1624','#1F2A3D'] },
+    navy:   { name: 'Navy',     light: ['#F3F4F8','#FFFFFF','#141B2B','#626A7E','#DBDFE9','#1F3A6B','#FFFFFF','#E0E6F2'], dark: ['#0F121A','#171B25','#E1E5EF','#8C94A8','#282E3C','#9DB5E8','#0C1428','#1F2A42'] },
+    lavender:{ name: 'Lavender', light: ['#F6F5F9','#FFFFFF','#221F2E','#6C6880','#E1DEEA','#6750A4','#FFFFFF','#ECE7F7'], dark: ['#131219','#1B1A23','#E7E4F0','#9894AA','#2E2C3A','#C3B3F2','#1A1330','#2B2640'] },
     plum:   { name: 'Plum',     light: ['#F7F4F7','#FFFFFF','#261B26','#736574','#E6DCE5','#7A3E78','#FFFFFF','#F1E3F0'], dark: ['#161216','#1F191F','#EDE3EC','#A092A0','#352B35','#D9A0D5','#1F1020','#34233A'] },
-    sunset: { name: 'Sunset',   light: ['#F8F4F1','#FFFFFF','#2A1D18','#7A6A62','#E9DED7','#B24A2B','#FFFFFF','#F7E4DC'], dark: ['#171311','#201A17','#EFE5E0','#A6958C','#382D28','#F0987A','#241008','#3A2620'] },
-    gold:   { name: 'Gold',     light: ['#F7F6F0','#FFFFFF','#26221A','#726C5E','#E4E0D3','#8A6212','#FFFFFF','#F3EBD6'], dark: ['#15140F','#1E1C16','#ECE8DD','#A29C8C','#34312A','#E5B955','#231904','#3A3220'] },
     rose:   { name: 'Rose',     light: ['#F8F3F4','#FFFFFF','#2A1A1E','#7A666B','#EADBDF','#B03A5B','#FFFFFF','#F8E1E7'], dark: ['#171113','#20181B','#F0E3E7','#A8939A','#3A2A30','#F29BB4','#260C15','#3D2230'] },
-    graphite:{ name: 'Graphite', light: ['#F5F5F5','#FFFFFF','#1C1C1E','#6B6B70','#E0E0E3','#2C2C30','#FFFFFF','#E9E9EC'], dark: ['#111112','#1B1B1D','#E8E8EA','#9A9AA0','#2E2E32','#E8E8EA','#111112','#2A2A2E'] }
+    cherry: { name: 'Cherry',   light: ['#F9F3F3','#FFFFFF','#2A1719','#7A6466','#ECDADC','#A3162E','#FFFFFF','#F7DDE1'], dark: ['#171012','#21171A','#F2E2E5','#AA9296','#3C272B','#FF7D8F','#2A070E','#40202A'] },
+    coral:  { name: 'Coral',    light: ['#F9F4F2','#FFFFFF','#2A1C1A','#7A6763','#EBDDD9','#C24E47','#FFFFFF','#FBE3DE'], dark: ['#171211','#211918','#F0E4E1','#A8948F','#3A2B28','#FF8F87','#2A0D09','#3E2420'] },
+    sunset: { name: 'Sunset',   light: ['#F8F4F1','#FFFFFF','#2A1D18','#7A6A62','#E9DED7','#B24A2B','#FFFFFF','#F7E4DC'], dark: ['#171311','#201A17','#EFE5E0','#A6958C','#382D28','#F0987A','#241008','#3A2620'] },
+    terracotta:{ name: 'Terracotta', light: ['#F7F2EE','#FFFFFF','#291C17','#786962','#E7DBD3','#9C4A34','#FFFFFF','#F2E1D8'], dark: ['#161210','#1F1916','#EEE3DE','#A5948C','#382C27','#E3957C','#240F08','#3A261F'] },
+    gold:   { name: 'Gold',     light: ['#F7F6F0','#FFFFFF','#26221A','#726C5E','#E4E0D3','#8A6212','#FFFFFF','#F3EBD6'], dark: ['#15140F','#1E1C16','#ECE8DD','#A29C8C','#34312A','#E5B955','#231904','#3A3220'] },
+    mocha:  { name: 'Mocha',    light: ['#F6F3EF','#FFFFFF','#271E18','#766A60','#E3DBD2','#7A5236','#FFFFFF','#EFE5DB'], dark: ['#15120F','#1E1A16','#EDE5DD','#A3978C','#352E28','#D8B08C','#23160B','#3A2E24'] },
+    graphite:{ name: 'Graphite', light: ['#F5F5F5','#FFFFFF','#1C1C1E','#6B6B70','#E0E0E3','#2C2C30','#FFFFFF','#E9E9EC'], dark: ['#111112','#1B1B1D','#E8E8EA','#9A9AA0','#2E2E32','#E8E8EA','#111112','#2A2A2E'] },
+    // Seasonal: a second colour for progress bars and confetti, and a little emoji on the home screen
+    spring: { name: 'Spring',   season: '🌸', accent2: ['#E07FA3','#F2A7C3'], light: ['#F5F8F1','#FFFFFF','#1C241D','#66725F','#DCE5D5','#3E7D4F','#FFFFFF','#E2F0DF'], dark: ['#111611','#192019','#E3EBE2','#8D9C8B','#2B362A','#8FD29F','#0D1C11','#203222'] },
+    summer: { name: 'Ocean breeze', season: '🌊', accent2: ['#E0A63A','#F0C067'], light: ['#F0F7F8','#FFFFFF','#122326','#5C7276','#D2E4E7','#12707E','#FFFFFF','#D8EEF1'], dark: ['#0D1618','#142022','#DEEBED','#869CA0','#243639','#6ED0DD','#061A1D','#17333A'] },
+    autumn: { name: 'Autumn',   season: '🍂', accent2: ['#C9922E','#E8C06A'], light: ['#F8F1E7','#FFFBF5','#2B1D12','#7C6A5A','#EADCC7','#B5541C','#FFFFFF','#F6E2CC'], dark: ['#17120D','#211A13','#F0E6DA','#AA9786','#3A2E22','#F0A064','#2A1305','#3D2A1A'] },
+    winter: { name: 'Winter',   season: '❄️', accent2: ['#8FB3D1','#DCE8F4'], light: ['#F1F5F9','#FFFFFF','#172230','#617083','#D7E0EA','#2F5F8F','#FFFFFF','#E0EAF4'], dark: ['#0F141A','#171E26','#E1E8F0','#8C99A8','#28323E','#A6C8EC','#0C1826','#1E2D3E'] },
+    festive:{ name: 'Festive',  season: '🎄', accent2: ['#2E7D4A','#7FCB94'], light: ['#F8F4EF','#FFFFFF','#261A17','#76675F','#E8DDD3','#A8222C','#FFFFFF','#F6DEDF'], dark: ['#141110','#1E1918','#F0E6E2','#A79690','#382C2A','#FF8A8F','#2A0A0D','#3D2224'] }
   };
   const VARS = ['--ground','--surface','--ink','--muted','--rule','--accent','--accent-ink','--accent-soft'];
+  const has = k => typeof k === 'string' && Object.prototype.hasOwnProperty.call(P, k);
   const dark = matchMedia('(prefers-color-scheme: dark)');
   const read = () => { try { return JSON.parse(localStorage.getItem('ticklist.theme')) || {}; } catch { return {}; } };
+  const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const mix = (a, b, w) => { const x = rgb(a), y = rgb(b); return '#' + x.map((v, i) => Math.round(v * w + y[i] * (1 - w)).toString(16).padStart(2, '0')).join(''); };
+
+  // The colours for a theme, optionally with a list's own colour in place of the theme colour
+  function compute(t, key) {
+    const pal = P[has(key) ? key : has(t.accent) ? t.accent : 'green'];
+    const mode = t.mode === 'light' || t.mode === 'dark' ? t.mode : (dark.matches ? 'dark' : 'light');
+    const d = mode === 'dark', v = {};
+    VARS.forEach((n, i) => { v[n] = pal[mode][i]; });
+    const a = v['--accent'];
+    v['--accent-2'] = pal.accent2 ? pal.accent2[d ? 1 : 0] : a;
+    if (t.style === 'tinted') {
+      const base = d ? '#0E0E0E' : '#FFFFFF';
+      v['--ground'] = mix(a, base, d ? .08 : .1);
+      v['--surface'] = mix(a, base, d ? .12 : .025);
+      v['--rule'] = mix(a, base, d ? .22 : .2);
+      v['--accent-soft'] = mix(a, base, d ? .26 : .17);
+    } else if (t.style === 'paper') {
+      Object.assign(v, d
+        ? { '--ground': '#1C1A16', '--surface': '#25221C', '--ink': '#ECE5D6', '--muted': '#A69E8D', '--rule': '#3B362C' }
+        : { '--ground': '#EFE8D8', '--surface': '#FFFCF3', '--ink': '#243044', '--muted': '#6E6A5E', '--rule': '#DDD2BB' });
+    }
+    if (d && t.black) {
+      v['--ground'] = '#000000';
+      v['--surface'] = t.style === 'tinted' ? mix(a, '#000000', .08) : '#0C0C0C';
+      v['--rule'] = t.style === 'tinted' ? mix(a, '#000000', .2) : '#262626';
+    }
+    if (t.contrast) {
+      v['--ink'] = d ? '#FFFFFF' : '#000000';
+      v['--muted'] = d ? '#D2D2D2' : '#3D3D3D';
+      v['--rule'] = d ? '#8A8A8A' : '#7A7A7A';
+      v['--accent'] = d ? mix(a, '#FFFFFF', .7) : mix(a, '#000000', .75);
+    }
+    v['--danger'] = d ? '#E58A76' : '#A6412F';
+    v['--danger-soft'] = d ? '#3A221D' : '#F6E4DF';
+    return { mode, v, pal };
+  }
+
+  // The list being opened, if it has its own colour. Read early so the theme colour doesn't flash first.
+  let listKey = null;
+  try {
+    const data = JSON.parse(localStorage.getItem('ticklist.v2')), m = location.hash.match(/^#list-(.+)$/);
+    const l = data && Array.isArray(data.lists) && (m ? data.lists.find(x => x && x.id === m[1]) : data.lists.length === 1 && data.lists[0]);
+    if (l && has(l.colour)) listKey = l.colour;
+  } catch {}
 
   function apply(t) {
     t = t || read();
-    const pal = P[t.accent] || P.green;
-    const mode = t.mode === 'light' || t.mode === 'dark' ? t.mode : (dark.matches ? 'dark' : 'light');
-    const root = document.documentElement, vals = pal[mode];
+    const { mode, v, pal } = compute(t, listKey);
+    const root = document.documentElement;
     root.dataset.theme = mode;
-    VARS.forEach((v, i) => root.style.setProperty(v, vals[i]));
-    root.style.setProperty('--danger', mode === 'dark' ? '#E58A76' : '#A6412F');
-    root.style.setProperty('--danger-soft', mode === 'dark' ? '#3A221D' : '#F6E4DF');
+    root.dataset.style = t.style === 'tinted' || t.style === 'paper' ? t.style : 'classic';
+    if (t.contrast) root.dataset.contrast = 'high'; else delete root.dataset.contrast;
+    Object.entries(v).forEach(([k, x]) => root.style.setProperty(k, x));
+    root.style.setProperty('--deco', pal.season ? `"${pal.season}" / ""` : 'none');
     root.style.setProperty('--shadow', mode === 'dark'
       ? '0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6)'
       : '0 1px 2px rgba(0,0,0,.05),0 8px 24px -12px rgba(0,0,0,.16)');
     root.style.colorScheme = mode;
-    document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.content = vals[0]; m.removeAttribute('media'); });
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.content = v['--ground']; m.removeAttribute('media'); });
   }
   function save(t) { try { localStorage.setItem('ticklist.theme', JSON.stringify(t)); } catch {} apply(t); }
+  function setList(key) { const k = has(key) ? key : null; if (k !== listKey) { listKey = k; apply(); } }
+  // The accent (and second colour) a palette shows with the current settings
+  const colours = key => { const { v } = compute(read(), key); return { a: v['--accent'], a2: v['--accent-2'] }; };
 
   dark.addEventListener('change', () => apply());
-  window.tickTheme = { palettes: P, read, save, apply };
+  window.tickTheme = { palettes: P, has, read, save, apply, setList, colours };
   apply();
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Patrick+Hand&display=swap">
 <style>
 :root{
   --ground:#F4F6F2;--surface:#FFFFFF;--ink:#1B2420;--muted:#65716B;--rule:#DCE2DB;
@@ -221,8 +286,8 @@ div.row{cursor:default}
 .sheet textarea.field{resize:vertical;min-height:84px;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px}
 .msg{margin:0;font-size:13.5px;color:var(--accent)}
 .msg.err{color:var(--danger)}
-.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:10px}
-.swatch{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px 8px;border:1.5px solid var(--rule);border-radius:12px;background:transparent;cursor:pointer;font-size:12.5px;font-weight:500}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:10px}
+.swatch{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px 8px;border:1.5px solid var(--rule);border-radius:12px;background:transparent;cursor:pointer;font-size:12.5px;font-weight:500;line-height:1.25;text-align:center}
 .swatch i{width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .swatch[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft)}
 .modes{display:flex;gap:2px;background:var(--rule);padding:3px;border-radius:10px}
@@ -251,6 +316,43 @@ div.row{cursor:default}
 .confetti i{position:absolute;top:-16px;width:8px;height:13px;border-radius:2px;animation:fall 1.6s cubic-bezier(.3,.6,.6,1) forwards}
 @keyframes fall{to{transform:translate(var(--dx),105vh) rotate(var(--r))}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}.confetti{display:none}}
+
+/* ---------- theme extras: seasonal colours, list colours ---------- */
+.bar>i,.row .mini i{background:linear-gradient(90deg,var(--accent),var(--accent-2,var(--accent)))}
+.home-head h1::after{content:var(--deco,none);margin-left:.25em;font-size:.72em;vertical-align:.06em}
+.lists li.coloured .row{box-shadow:inset 4px 0 0 var(--row-accent)}
+.lists li.coloured .mini i{background:var(--row-accent)}
+.swatch.default i{background:transparent!important;box-shadow:inset 0 0 0 2px var(--muted);position:relative}
+.swatch.default i::after{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--sw)}
+.menu-item .dot{flex:none;width:20px;height:20px;border-radius:50%;background:var(--accent);box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+
+/* ---------- Paper style: notebook paper, ruled lines and handwriting ---------- */
+:root[data-style="paper"]{--hand:"Patrick Hand","Segoe Print","Bradley Hand",cursive;--line:rgba(64,110,170,.3);--margin:rgba(196,72,72,.45)}
+:root[data-style="paper"][data-theme="dark"]{--line:rgba(140,170,220,.2);--margin:rgba(230,110,110,.35)}
+[data-style="paper"] .display,[data-style="paper"] .sheet h2{font-family:var(--hand);font-weight:400;letter-spacing:0}
+[data-style="paper"] .text,[data-style="paper"] .edit,[data-style="paper"] .row .name{font-family:var(--hand);font-size:19px;line-height:1.3;font-weight:400}
+[data-style="paper"] .items,[data-style="paper"] .lists{border-radius:4px}
+[data-style="paper"] .item,[data-style="paper"] .lists li+li{border-top-color:var(--line)}
+[data-style="paper"] .item{background-image:linear-gradient(90deg,transparent 45px,var(--margin) 45px,var(--margin) 46.5px,transparent 46.5px)}
+[data-style="paper"] .check{border-color:var(--ink);border-width:1.75px;border-radius:3px}
+[data-style="paper"] .item.done .check{background:transparent;border-color:var(--ink)}
+[data-style="paper"] .item.done .check path{stroke:var(--accent)}
+[data-style="paper"] .check svg{width:19px;height:19px;overflow:visible}
+[data-style="paper"] .item.done .text{text-decoration-color:var(--accent);text-decoration-thickness:1.5px}
+
+/* ---------- High contrast: bolder text and borders ---------- */
+[data-contrast="high"] .item,[data-contrast="high"] .lists li+li{border-top-width:1.5px}
+[data-contrast="high"] .field,[data-contrast="high"] .icon-btn,[data-contrast="high"] .menu-group,[data-contrast="high"] .swatch{border-width:2px}
+[data-contrast="high"] .btn.ghost{box-shadow:inset 0 0 0 2px var(--ink)}
+[data-contrast="high"] .check{border-color:var(--ink)}
+[data-contrast="high"] .del{opacity:1}
+[data-contrast="high"] .filters button[aria-pressed="true"],[data-contrast="high"] .modes button[aria-checked="true"]{box-shadow:inset 0 0 0 2px var(--ink)}
+[data-contrast="high"] .filters,[data-contrast="high"] .modes{background:var(--surface);box-shadow:inset 0 0 0 2px var(--rule)}
+[data-contrast="high"] .filters button,[data-contrast="high"] .modes button{color:var(--ink)}
+[data-contrast="high"] .filters button[aria-pressed="true"],[data-contrast="high"] .modes button[aria-checked="true"]{background:var(--ink);color:var(--surface)}
+[data-contrast="high"] :focus-visible{outline-width:3px}
+[data-contrast="high"] .text,[data-contrast="high"] .row .name{font-weight:600}
+[data-contrast="high"] .item.done .text{font-weight:500}
 </style>
 </head>
 <body>
@@ -389,6 +491,10 @@ div.row{cursor:default}
         <h2 id="menu-title"></h2>
       </div>
       <div class="menu-group">
+        <button type="button" class="menu-item" id="list-colour">
+          <span class="dot" aria-hidden="true"></span>
+          <span>List colour<small id="list-colour-hint">Uses your theme colour</small></span>
+        </button>
         <button type="button" class="menu-item" id="reorder-items">
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4v12M7 16l-3-3M7 4 4 7M13 16V4m0 0 3 3m-3-3-3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span>Reorder items<small id="reorder-hint">Drag items into a new order</small></span>
@@ -414,6 +520,15 @@ div.row{cursor:default}
       </div>
       <button type="button" class="btn ghost" id="menu-close">Close</button>
     </div>
+    <div id="menu-colour" class="menu-view" hidden>
+      <div>
+        <p class="eyebrow">List colour</p>
+        <h2 id="colour-title"></h2>
+        <p class="hint" style="margin-top:6px">Give this list its own colour so it’s easy to spot. Your other lists keep your theme colour.</p>
+      </div>
+      <div id="list-swatches" class="swatches" role="radiogroup" aria-label="List colour"></div>
+      <button type="button" class="btn" id="colour-done">Done</button>
+    </div>
     <div id="menu-confirm" class="menu-view" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-text" hidden>
       <div>
         <h2 id="confirm-title">Delete this list?</h2>
@@ -431,18 +546,40 @@ div.row{cursor:default}
 <dialog id="settings-sheet" class="sheet" aria-labelledby="settings-title">
   <div class="sheet-body">
     <h2 id="settings-title">Settings</h2>
-    <div>
+    <section>
       <h3>Colour</h3>
+      <p class="hint" id="colour-note" hidden></p>
       <div id="swatches" class="swatches" role="radiogroup" aria-label="Colour"></div>
-    </div>
-    <div>
+    </section>
+    <section>
+      <h3>Seasonal</h3>
+      <div id="seasons" class="swatches" role="radiogroup" aria-label="Seasonal colour"></div>
+    </section>
+    <section>
+      <h3>Style</h3>
+      <div id="styles" class="modes" role="radiogroup" aria-label="Style">
+        <button type="button" role="radio" data-style="classic">Classic</button>
+        <button type="button" role="radio" data-style="tinted">Tinted</button>
+        <button type="button" role="radio" data-style="paper">Paper</button>
+      </div>
+      <p class="hint" id="style-hint"></p>
+    </section>
+    <section>
       <h3>Appearance</h3>
       <div id="modes" class="modes" role="radiogroup" aria-label="Appearance">
         <button type="button" role="radio" data-mode="system">System</button>
         <button type="button" role="radio" data-mode="light">Light</button>
         <button type="button" role="radio" data-mode="dark">Dark</button>
       </div>
-    </div>
+      <label class="switch" for="pref-black">
+        <span>True black in dark mode<small>Saves battery on phones with OLED screens.</small></span>
+        <input type="checkbox" id="pref-black" role="switch">
+      </label>
+      <label class="switch" for="pref-contrast">
+        <span>High contrast<small>Bolder text and borders, easier to read.</small></span>
+        <input type="checkbox" id="pref-contrast" role="switch">
+      </label>
+    </section>
     <div>
       <h3>Lists</h3>
       <label class="switch" for="pref-sink">
@@ -510,6 +647,7 @@ div.row{cursor:default}
   const closeSheet = d => { if (d.close) d.close(); else d.removeAttribute('open'); };
   document.querySelectorAll('.sheet').forEach(d => d.addEventListener('click', e => { if (e.target === d) closeSheet(d); }));
   const menuSheet = document.getElementById('menu-sheet');
+  const T = window.tickTheme;
 
   const GRIP = '<svg viewBox="0 0 18 18" aria-hidden="true"><g fill="currentColor"><circle cx="6.5" cy="4" r="1.5"/><circle cx="11.5" cy="4" r="1.5"/><circle cx="6.5" cy="9" r="1.5"/><circle cx="11.5" cy="9" r="1.5"/><circle cx="6.5" cy="14" r="1.5"/><circle cx="11.5" cy="14" r="1.5"/></g></svg>';
   const handle = label => `<button type="button" class="handle" aria-label="Move ${esc(label)}. Drag, or use the up and down arrow keys">${GRIP}</button>`;
@@ -651,6 +789,7 @@ div.row{cursor:default}
   function showHome() {
     $('view').hidden = true; $('home').hidden = false;
     document.title = 'My Tick List';
+    T.setList(null);
     renderHome(); renderNudge();
   }
   function renderHome() {
@@ -673,9 +812,10 @@ div.row{cursor:default}
           ${complete ? '<span class="badge">✓ All done</span>' : `<span class="mono">${total ? `${done} of ${total} done` : 'Empty'}</span>`}
           ${total ? `<span class="mini"><i style="width:${done / total * 100}%"></i></span>` : ''}
         </span>`;
+      const own = T.has(l.colour) ? ` class="coloured" style="--row-accent:${T.colours(l.colour).a}"` : '';
       return reorderLists
-        ? `<li data-list="${esc(l.id)}"><div class="row"><span class="name">${esc(l.title)}</span>${handle(l.title)}${meta}</div></li>`
-        : `<li data-list="${esc(l.id)}"><button type="button" class="row"><span class="name">${esc(l.title)}</span><span class="chev" aria-hidden="true">›</span>${meta}</button></li>`;
+        ? `<li data-list="${esc(l.id)}"${own}><div class="row"><span class="name">${esc(l.title)}</span>${handle(l.title)}${meta}</div></li>`
+        : `<li data-list="${esc(l.id)}"${own}><button type="button" class="row"><span class="name">${esc(l.title)}</span><span class="chev" aria-hidden="true">›</span>${meta}</button></li>`;
     }).join('');
   }
   $('lists').addEventListener('click', e => {
@@ -707,7 +847,7 @@ div.row{cursor:default}
   $('search').addEventListener('input', e => { query = e.target.value; renderHome(); });
 
   /* ---------- one list ---------- */
-  function showView() { $('home').hidden = true; $('view').hidden = false; renderView(); window.scrollTo(0, 0); }
+  function showView() { $('home').hidden = true; $('view').hidden = false; T.setList(current() && current().colour); renderView(); window.scrollTo(0, 0); }
   function change() { save(); renderView(); }
 
   function renderView() {
@@ -721,6 +861,7 @@ div.row{cursor:default}
     $('share').disabled = !total;
     // List options: say why an option is unavailable rather than hiding it
     $('menu-title').textContent = list.title;
+    $('list-colour-hint').textContent = T.has(list.colour) ? T.palettes[list.colour].name : 'Uses your theme colour';
     $('reorder-items').disabled = total < 2;
     $('reorder-hint').textContent = total < 2 ? 'Add at least 2 items first' : 'Drag items into a new order';
     $('reset').disabled = !done;
@@ -779,11 +920,34 @@ div.row{cursor:default}
   });
 
   /* ---------- list options sheet ---------- */
-  function showMenuView(confirm) {
-    $('menu-main').hidden = confirm; $('menu-confirm').hidden = !confirm;
-    (confirm ? $('confirm-no') : $('menu-main').querySelector('.menu-item:not(:disabled)'))?.focus();
+  function showMenuView(name) {
+    for (const v of ['main', 'colour', 'confirm']) $('menu-' + v).hidden = v !== name;
+    ({ main: () => $('menu-main').querySelector('.menu-item:not(:disabled)'), confirm: () => $('confirm-no'),
+       colour: () => $('list-swatches').querySelector('[aria-checked="true"]') })[name]()?.focus();
   }
-  $('more').addEventListener('click', () => { renderView(); openSheet(menuSheet); showMenuView(false); });
+  $('more').addEventListener('click', () => { renderView(); openSheet(menuSheet); showMenuView('main'); });
+
+  /* ---------- a list's own colour ---------- */
+  const swatchHtml = (key, name, on, extra = '') => {
+    const c = T.colours(key), fill = c.a2 !== c.a ? `linear-gradient(135deg,${c.a} 50%,${c.a2} 50%)` : c.a;
+    return `<button type="button" class="swatch${key ? '' : ' default'}" role="radio" data-accent="${key || ''}" aria-checked="${on}"${extra}>
+      <i style="background:${fill};--sw:${fill}"></i>${esc(name)}</button>`;
+  };
+  function renderListSwatches() {
+    const l = current(), own = T.has(l.colour) ? l.colour : '';
+    $('colour-title').textContent = l.title;
+    $('list-swatches').innerHTML = swatchHtml(null, 'Theme', !own, ' title="Use your theme colour"') +
+      Object.entries(T.palettes).map(([k, p]) => swatchHtml(k, (p.season ? p.season + ' ' : '') + p.name, k === own)).join('');
+  }
+  $('list-colour').addEventListener('click', () => { renderListSwatches(); showMenuView('colour'); });
+  $('list-swatches').addEventListener('click', e => {
+    const b = e.target.closest('.swatch'); if (!b) return;
+    const l = current(), key = b.dataset.accent;
+    if (T.has(key)) l.colour = key; else delete l.colour;
+    save(); T.setList(l.colour); renderListSwatches(); renderView();
+    $('list-swatches').querySelector(`[data-accent="${key}"]`)?.focus();
+  });
+  $('colour-done').addEventListener('click', () => closeSheet(menuSheet));
   $('menu-close').addEventListener('click', () => closeSheet(menuSheet));
   // Each option closes the sheet, then acts
   const option = (id, fn) => $(id).addEventListener('click', () => { closeSheet(menuSheet); fn(); });
@@ -794,9 +958,9 @@ div.row{cursor:default}
   $('delete-list').addEventListener('click', () => {
     const l = current(), n = l.items.length;
     $('confirm-text').textContent = `“${l.title}”${n ? ` and its ${plural(n, 'item')}` : ''} will be deleted. You can undo this straight afterwards.`;
-    showMenuView(true);
+    showMenuView('confirm');
   });
-  $('confirm-no').addEventListener('click', () => showMenuView(false));
+  $('confirm-no').addEventListener('click', () => showMenuView('main'));
   $('confirm-yes').addEventListener('click', () => {
     const title = current().title;
     closeSheet(menuSheet);
@@ -811,6 +975,7 @@ div.row{cursor:default}
   option('duplicate-list', () => {
     const src = current();
     const copy = { id: uid(), title: `${src.title} (copy)`.slice(0, 80), items: src.items.map(i => ({ id: uid(), text: i.text, done: false })) };
+    if (T.has(src.colour)) copy.colour = src.colour;
     data.lists.splice(data.lists.indexOf(src) + 1, 0, copy);
     save();
     location.hash = 'list-' + copy.id; route();
@@ -976,7 +1141,7 @@ div.row{cursor:default}
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const box = document.createElement('div'); box.className = 'confetti'; box.setAttribute('aria-hidden', 'true');
     const cs = getComputedStyle(document.documentElement);
-    const colours = [cs.getPropertyValue('--accent'), '#E5B955', '#F29BB4', '#8FB2F0', '#7CC3A3', '#F0987A'];
+    const colours = [cs.getPropertyValue('--accent'), cs.getPropertyValue('--accent-2'), '#E5B955', '#F29BB4', '#8FB2F0', '#7CC3A3', '#F0987A'];
     for (let i = 0; i < 42; i++) {
       const p = document.createElement('i');
       p.style.left = Math.random() * 100 + '%';
@@ -991,25 +1156,47 @@ div.row{cursor:default}
   }
 
   /* ---------- settings: theme and list behaviour ---------- */
-  const T = window.tickTheme, settingsSheet = $('settings-sheet');
+  const settingsSheet = $('settings-sheet');
+  const STYLE_HINTS = {
+    classic: 'Clean white cards on a softly coloured page.',
+    tinted: 'The whole page takes on a soft wash of your colour.',
+    paper: 'Notebook paper with ruled lines and handwriting.'
+  };
   function renderSettings() {
-    const t = T.read(), accent = T.palettes[t.accent] ? t.accent : 'green', mode = t.mode || 'system';
-    const showDark = document.documentElement.dataset.theme === 'dark';
-    $('swatches').innerHTML = Object.entries(T.palettes).map(([key, p]) =>
-      `<button type="button" class="swatch" role="radio" data-accent="${key}" aria-checked="${key === accent}">
-        <i style="background:${(showDark ? p.dark : p.light)[5]}"></i>${p.name}</button>`).join('');
+    const t = T.read(), accent = T.has(t.accent) ? t.accent : 'green', mode = t.mode || 'system';
+    const style = t.style === 'tinted' || t.style === 'paper' ? t.style : 'classic';
+    const all = Object.entries(T.palettes);
+    const sw = ([k, p]) => swatchHtml(k, (p.season ? p.season + ' ' : '') + p.name, k === accent);
+    $('swatches').innerHTML = all.filter(([, p]) => !p.season).map(sw).join('');
+    $('seasons').innerHTML = all.filter(([, p]) => p.season).map(sw).join('');
     document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === mode)));
+    document.querySelectorAll('#styles button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.style === style)));
+    $('style-hint').textContent = STYLE_HINTS[style];
+    $('pref-black').checked = !!t.black;
+    $('pref-contrast').checked = !!t.contrast;
     $('pref-sink').checked = !!prefs.sinkDone;
+    const l = !$('view').hidden && current();
+    $('colour-note').hidden = !(l && T.has(l.colour));
+    if (l && T.has(l.colour)) $('colour-note').textContent = `“${l.title}” has its own colour (${T.palettes[l.colour].name}), so the colour you pick here shows on your other lists. To change this list’s colour, use ⋯ then List colour.`;
   }
+  function saveTheme(change) { T.save({ ...T.read(), ...change }); renderSettings(); if (!$('home').hidden) renderHome(); }
   document.querySelectorAll('.settings-open').forEach(b => b.addEventListener('click', () => { renderSettings(); openSheet(settingsSheet); }));
-  $('swatches').addEventListener('click', e => {
+  for (const id of ['swatches', 'seasons']) $(id).addEventListener('click', e => {
     const s = e.target.closest('.swatch'); if (!s) return;
-    T.save({ ...T.read(), accent: s.dataset.accent }); renderSettings();
+    saveTheme({ accent: s.dataset.accent });
+    settingsSheet.querySelector(`.swatch[data-accent="${s.dataset.accent}"]`)?.focus();
   });
   $('modes').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
-    T.save({ ...T.read(), mode: b.dataset.mode }); renderSettings();
+    saveTheme({ mode: b.dataset.mode });
   });
+  $('styles').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    saveTheme({ style: b.dataset.style });
+  });
+  $('pref-black').addEventListener('change', e => saveTheme({ black: e.target.checked }));
+  $('pref-contrast').addEventListener('change', e => saveTheme({ contrast: e.target.checked }));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (!$('home').hidden) renderHome(); });
   $('pref-sink').addEventListener('change', e => {
     prefs.sinkDone = e.target.checked; ls.set('ticklist.prefs', JSON.stringify(prefs));
     if (prefs.sinkDone) data.lists.forEach(sortDone);
@@ -1023,7 +1210,7 @@ div.row{cursor:default}
 
   function backupText() {
     return JSON.stringify({ app: 'tick-list', version: 2, saved: new Date().toISOString(),
-      lists: data.lists.map(l => ({ title: l.title, items: l.items.map(i => ({ text: i.text, done: !!i.done })) })) }, null, 1);
+      lists: data.lists.map(l => ({ title: l.title, ...(T.has(l.colour) ? { colour: l.colour } : {}), items: l.items.map(i => ({ text: i.text, done: !!i.done })) })) }, null, 1);
   }
   function markBackedUp() { ls.set('ticklist.lastBackup', new Date().toISOString()); renderLastBackup(); renderNudge(); }
   function renderLastBackup() {
@@ -1066,7 +1253,7 @@ div.row{cursor:default}
     const raw = Array.isArray(d && d.lists) ? d.lists : (d && Array.isArray(d.items) ? [d] : null);
     if (!raw) return null;
     const lists = raw.filter(l => l && Array.isArray(l.items)).map(l => ({
-      id: uid(), title: String(l.title || 'Untitled list').slice(0, 80),
+      id: uid(), title: String(l.title || 'Untitled list').slice(0, 80), ...(T.has(l.colour) ? { colour: l.colour } : {}),
       items: l.items.filter(i => i && typeof i.text === 'string' && i.text.trim())
         .map(i => ({ id: uid(), text: i.text.trim().slice(0, 300), done: !!i.done }))
     }));
