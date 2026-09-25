@@ -182,11 +182,26 @@ div.row{cursor:default}
 .status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .status[data-s="error"]::before{background:var(--danger)}
 .status[data-s="offline"]::before{background:#C9962B}
-.confirm{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border-radius:12px;background:var(--danger-soft);font-size:14px}
-.confirm .grow{flex:1;min-width:12ch}
-.confirm button{border:0;border-radius:8px;padding:8px 12px;font-weight:600;cursor:pointer}
-.confirm .yes{background:var(--danger);color:var(--surface)}
-.confirm .no{background:transparent;text-decoration:underline;text-underline-offset:3px}
+.filters{align-self:flex-start}
+.reorder-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 8px 8px 14px;border-radius:12px;background:var(--accent-soft);font-size:14px}
+.reorder-bar svg{width:14px;height:14px;vertical-align:-2px;color:var(--accent)}
+.reorder-bar .btn{padding:8px 16px}
+
+/* ---------- list options sheet ---------- */
+.menu-view{display:flex;flex-direction:column;gap:16px}
+.eyebrow{margin:0 0 2px;font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+#menu-title{overflow-wrap:anywhere}
+.menu-group{display:flex;flex-direction:column;border:1px solid var(--rule);border-radius:14px;overflow:hidden}
+.menu-item{display:flex;align-items:center;gap:14px;width:100%;min-height:56px;padding:10px 16px;border:0;background:transparent;text-align:left;font-weight:600;cursor:pointer}
+.menu-item+.menu-item{border-top:1px solid var(--rule)}
+.menu-item:hover:not(:disabled){background:var(--accent-soft)}
+.menu-item svg{flex:none;width:20px;height:20px;color:var(--accent)}
+.menu-item small{display:block;font-weight:400;font-size:12.5px;color:var(--muted)}
+.menu-item:disabled{cursor:default}
+.menu-item:disabled>span,.menu-item:disabled svg{opacity:.45}
+.menu-item.danger,.menu-item.danger svg{color:var(--danger)}
+.menu-item.danger:hover{background:var(--danger-soft)}
+.btn.danger-fill{background:var(--danger);color:var(--surface)}
 
 /* ---------- sheets (settings, backup) ---------- */
 .sheet{border:0;padding:0;margin:auto auto 0;width:100%;max-width:520px;max-height:92vh;background:var(--surface);color:var(--ink);border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.25)}
@@ -286,6 +301,9 @@ div.row{cursor:default}
       <button type="button" class="icon-btn" id="share" aria-label="Share this list" title="Share this list">
         <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 12.5V3M6.5 6.5 10 3l3.5 3.5M5 9.5H4.5A1.5 1.5 0 0 0 3 11v4.5A1.5 1.5 0 0 0 4.5 17h11a1.5 1.5 0 0 0 1.5-1.5V11a1.5 1.5 0 0 0-1.5-1.5H15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
+      <button type="button" class="icon-btn" id="more" aria-label="List options" title="List options" aria-haspopup="dialog">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><g fill="currentColor"><circle cx="4.5" cy="10" r="1.7"/><circle cx="10" cy="10" r="1.7"/><circle cx="15.5" cy="10" r="1.7"/></g></svg>
+      </button>
       <button type="button" class="icon-btn settings-open" aria-label="Settings" title="Settings">
         <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5a7.5 7.5 0 1 0 0 15c1 0 1.6-.7 1.6-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5h1.8a3.4 3.4 0 0 0 3.4-3.4C17.5 5.5 14.1 2.5 10 2.5Z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6.2" cy="9.5" r="1.1" fill="currentColor"/><circle cx="8.6" cy="6.2" r="1.1" fill="currentColor"/><circle cx="12.4" cy="6.2" r="1.1" fill="currentColor"/></svg>
       </button>
@@ -314,35 +332,70 @@ div.row{cursor:default}
   </form>
   <p class="add-hint" id="add-hint">Tip: paste a list and each line becomes its own item.</p>
 
-  <div class="bar-row">
-    <div class="filters" role="group" aria-label="Show">
-      <button type="button" data-f="all">All</button>
-      <button type="button" data-f="todo">To do</button>
-      <button type="button" data-f="done">Done</button>
-    </div>
-    <div class="links">
-      <button type="button" class="link" id="reorder-items">Reorder</button>
-      <button type="button" class="link" id="reset">Untick all</button>
-      <button type="button" class="link danger" id="clear">Clear done</button>
-    </div>
+  <div class="filters" id="filters" role="group" aria-label="Show">
+    <button type="button" data-f="all">All</button>
+    <button type="button" data-f="todo">To do</button>
+    <button type="button" data-f="done">Done</button>
+  </div>
+
+  <div class="reorder-bar" id="reorder-bar" role="status" hidden>
+    <span>Drag the <svg viewBox="0 0 18 18" aria-hidden="true"><g fill="currentColor"><circle cx="6.5" cy="4" r="1.5"/><circle cx="11.5" cy="4" r="1.5"/><circle cx="6.5" cy="9" r="1.5"/><circle cx="11.5" cy="9" r="1.5"/><circle cx="6.5" cy="14" r="1.5"/><circle cx="11.5" cy="14" r="1.5"/></g></svg> handles to move items</span>
+    <button type="button" class="btn" id="reorder-done">Done</button>
   </div>
 
   <ul id="items" class="items"></ul>
 
-  <div id="confirm" class="confirm" role="alert" hidden>
-    <span class="grow" id="confirm-text"></span>
-    <button type="button" class="yes" id="confirm-yes">Delete list</button>
-    <button type="button" class="no" id="confirm-no">Cancel</button>
-  </div>
-
   <footer class="foot">
     <span id="status-view" class="status">Saved on this device</span>
-    <span class="links">
-      <button type="button" class="link" id="duplicate-list">Duplicate list</button>
-      <button type="button" class="link danger" id="delete-list">Delete this list</button>
-    </span>
   </footer>
 </main>
+
+<!-- List options -->
+<dialog id="menu-sheet" class="sheet" aria-labelledby="menu-title">
+  <div class="sheet-body">
+    <div id="menu-main" class="menu-view">
+      <div>
+        <p class="eyebrow">List options</p>
+        <h2 id="menu-title"></h2>
+      </div>
+      <div class="menu-group">
+        <button type="button" class="menu-item" id="reorder-items">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4v12M7 16l-3-3M7 4 4 7M13 16V4m0 0 3 3m-3-3-3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Reorder items<small id="reorder-hint">Drag items into a new order</small></span>
+        </button>
+        <button type="button" class="menu-item" id="reset">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10a6 6 0 1 0 1.8-4.3M4 3.5V6.5h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Untick all<small id="reset-hint">Keep the items, clear the ticks</small></span>
+        </button>
+        <button type="button" class="menu-item" id="clear">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l3 3 6-7M11 13.5h5M13 9.5h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Clear done items<small id="clear-hint"></small></span>
+        </button>
+        <button type="button" class="menu-item" id="duplicate-list">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="7" width="9.5" height="9.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M13 7V5a1.5 1.5 0 0 0-1.5-1.5h-6A1.5 1.5 0 0 0 4 5v6a1.5 1.5 0 0 0 1.5 1.5H7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span>Duplicate list<small>Make a copy with everything unticked</small></span>
+        </button>
+      </div>
+      <div class="menu-group">
+        <button type="button" class="menu-item danger" id="delete-list">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6h12M8 6V4.5h4V6M6 6l.7 9.5a1.5 1.5 0 0 0 1.5 1.5h3.6a1.5 1.5 0 0 0 1.5-1.5L14 6M8.5 9v5M11.5 9v5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Delete list</span>
+        </button>
+      </div>
+      <button type="button" class="btn ghost" id="menu-close">Close</button>
+    </div>
+    <div id="menu-confirm" class="menu-view" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-text" hidden>
+      <div>
+        <h2 id="confirm-title">Delete this list?</h2>
+        <p class="hint" id="confirm-text" style="margin-top:6px"></p>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn danger-fill" id="confirm-yes">Delete list</button>
+        <button type="button" class="btn ghost" id="confirm-no">Cancel</button>
+      </div>
+    </div>
+  </div>
+</dialog>
 
 <!-- Settings -->
 <dialog id="settings-sheet" class="sheet" aria-labelledby="settings-title">
@@ -426,6 +479,7 @@ div.row{cursor:default}
   const openSheet = d => { if (d.showModal) d.showModal(); else d.setAttribute('open', ''); };
   const closeSheet = d => { if (d.close) d.close(); else d.removeAttribute('open'); };
   document.querySelectorAll('.sheet').forEach(d => d.addEventListener('click', e => { if (e.target === d) closeSheet(d); }));
+  const menuSheet = document.getElementById('menu-sheet');
 
   const GRIP = '<svg viewBox="0 0 18 18" aria-hidden="true"><g fill="currentColor"><circle cx="6.5" cy="4" r="1.5"/><circle cx="11.5" cy="4" r="1.5"/><circle cx="6.5" cy="9" r="1.5"/><circle cx="11.5" cy="9" r="1.5"/><circle cx="6.5" cy="14" r="1.5"/><circle cx="11.5" cy="14" r="1.5"/></g></svg>';
   const handle = label => `<button type="button" class="handle" aria-label="Move ${esc(label)}. Drag, or use the up and down arrow keys">${GRIP}</button>`;
@@ -550,7 +604,7 @@ div.row{cursor:default}
   /* ---------- navigation: #list-<id> opens a list, no hash shows home ---------- */
   let openedFromHome = false;
   function route() {
-    editing = null; $('confirm').hidden = true;
+    editing = null; if (menuSheet.open) closeSheet(menuSheet);
     const m = location.hash.match(/^#list-(.+)$/);
     const list = m && byId(m[1]);
     if (list) { if (data.activeId !== list.id) reorderItems = false; data.activeId = list.id; save(); showView(); }
@@ -619,19 +673,22 @@ div.row{cursor:default}
     if (document.activeElement !== $('title')) $('title').value = list.title;
     $('count').textContent = total ? (done === total ? `All ${total} done` : `${done} of ${total} done`) : 'Nothing yet';
     $('fill').style.width = total ? (done / total * 100) + '%' : '0';
-    $('clear').disabled = !done; $('clear').textContent = done ? `Clear done (${done})` : 'Clear done';
-    $('reset').disabled = !done;
     $('share').disabled = !total;
-    $('reorder-items').hidden = total < 2;
-    $('reorder-items').textContent = reorderItems ? 'Done reordering' : 'Reorder';
-    $('reorder-items').classList.toggle('on', reorderItems);
-    $('reset').hidden = $('clear').hidden = reorderItems;
+    // List options: say why an option is unavailable rather than hiding it
+    $('menu-title').textContent = list.title;
+    $('reorder-items').disabled = total < 2;
+    $('reorder-hint').textContent = total < 2 ? 'Add at least 2 items first' : 'Drag items into a new order';
+    $('reset').disabled = !done;
+    $('reset-hint').textContent = done ? 'Keep the items, clear the ticks' : 'Nothing is ticked yet';
+    $('clear').disabled = !done;
+    $('clear-hint').textContent = done ? `Remove the ${plural(done, 'ticked item')}` : 'Nothing is ticked yet';
+    $('duplicate-list').disabled = !total;
+    $('filters').hidden = reorderItems;
+    $('reorder-bar').hidden = !reorderItems;
+    $('add').hidden = reorderItems;
     $('add-hint').hidden = total > 3 || reorderItems;
     $('items').classList.toggle('reordering', reorderItems);
-    document.querySelectorAll('.filters button').forEach(b => {
-      b.setAttribute('aria-pressed', String(reorderItems ? b.dataset.f === 'all' : b.dataset.f === filter));
-      b.disabled = reorderItems;
-    });
+    document.querySelectorAll('.filters button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === filter)));
 
     const f = reorderItems ? 'all' : filter;
     const shown = list.items.filter(i => f === 'all' || (f === 'done') === !!i.done);
@@ -676,23 +733,37 @@ div.row{cursor:default}
     if (v !== list.title) { list.title = v; change(); } else titleEl.value = v;
   });
 
+  /* ---------- list options sheet ---------- */
+  function showMenuView(confirm) {
+    $('menu-main').hidden = confirm; $('menu-confirm').hidden = !confirm;
+    (confirm ? $('confirm-no') : $('menu-main').querySelector('.menu-item:not(:disabled)'))?.focus();
+  }
+  $('more').addEventListener('click', () => { renderView(); openSheet(menuSheet); showMenuView(false); });
+  $('menu-close').addEventListener('click', () => closeSheet(menuSheet));
+  // Each option closes the sheet, then acts
+  const option = (id, fn) => $(id).addEventListener('click', () => { closeSheet(menuSheet); fn(); });
+
+  option('reorder-items', () => { reorderItems = true; editing = null; renderView(); $('items').querySelector('.handle')?.focus(); });
+  $('reorder-done').addEventListener('click', () => { reorderItems = false; renderView(); $('more').focus(); });
+
   $('delete-list').addEventListener('click', () => {
     const l = current(), n = l.items.length;
-    $('confirm-text').textContent = `Delete “${l.title}”${n ? ` and its ${plural(n, 'item')}` : ''}?`;
-    $('confirm').hidden = false; $('confirm-no').focus();
+    $('confirm-text').textContent = `“${l.title}”${n ? ` and its ${plural(n, 'item')}` : ''} will be deleted. You can undo this straight afterwards.`;
+    showMenuView(true);
   });
-  $('confirm-no').addEventListener('click', () => { $('confirm').hidden = true; });
+  $('confirm-no').addEventListener('click', () => showMenuView(false));
   $('confirm-yes').addEventListener('click', () => {
     const title = current().title;
+    closeSheet(menuSheet);
     withUndo(`Deleted “${title}”`, () => {
       data.lists = data.lists.filter(l => l.id !== data.activeId);
       if (!data.lists.length) data.lists.push({ id: uid(), title: 'My checklist', items: [] });
       data.activeId = data.lists[0].id;
     });
-    $('confirm').hidden = true; goHome();
+    goHome();
   });
 
-  $('duplicate-list').addEventListener('click', () => {
+  option('duplicate-list', () => {
     const src = current();
     const copy = { id: uid(), title: `${src.title} (copy)`.slice(0, 80), items: src.items.map(i => ({ id: uid(), text: i.text, done: false })) };
     data.lists.splice(data.lists.indexOf(src) + 1, 0, copy);
@@ -762,14 +833,13 @@ div.row{cursor:default}
     renderView();
   });
 
-  $('reorder-items').addEventListener('click', () => { reorderItems = !reorderItems; editing = null; renderView(); });
   makeSortable($('items'), '.item', 'id', ids => { const l = current(); l.items = reorderBy(l.items, ids); change(); });
-  $('clear').addEventListener('click', () => {
+  option('clear', () => {
     const n = stats(current()).done;
     withUndo(`Cleared ${plural(n, 'done item')}`, () => { current().items = current().items.filter(i => !i.done); });
     renderView();
   });
-  $('reset').addEventListener('click', () => {
+  option('reset', () => {
     withUndo('Unticked everything', () => { current().items.forEach(i => { i.done = false; }); });
     renderView();
   });

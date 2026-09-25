@@ -11,9 +11,10 @@ A simple checklist that works on your phone or computer. You can keep as many li
 - **Paste a whole list at once.** Paste lines copied from a note or message and each line becomes its own item. Bullets, numbers and checkboxes are tidied away, and items marked `[x]` or ☑ arrive ticked.
 - **Share a list** with the share button. It sends a readable checklist to WhatsApp, Messages, email or anywhere else. Whoever gets it can paste it straight into their own Tick List.
 - **Ticked items move to the bottom**, so what's left to do stays at the top. You can turn this off in Settings.
+- **List options (⋯)** at the top of each list: reorder items, untick all, clear done items, duplicate the list, or delete it.
 - **Duplicate a list** to reuse it with everything unticked. Handy for packing lists and weekly routines. **Untick all** does the same for the list you're in.
 - **Undo mistakes.** Deleting something shows an **Undo** button for a few seconds.
-- **Reorder** items and lists: tap **Reorder**, then drag the handle.
+- **Reorder** items (⋯ → **Reorder items**) or lists (**Reorder lists** on the home screen), then drag the ⠿ handle.
 - **Filter** to see everything, only what's left to do, or only what's done.
 - **Works offline.** Once you've opened it, it opens and saves without internet.
 - **Choose a theme** in Settings: 7 colours, plus Light, Dark or match your phone.
