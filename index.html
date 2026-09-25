@@ -6,6 +6,13 @@
 <title>My Tick List</title>
 <meta name="theme-color" content="#F4F6F2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121614" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Tick List">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script>
 /* Themes: applied before the page paints so there's no flash of the default colour. */
 (() => {
@@ -197,6 +204,11 @@ div.row{cursor:default}
 .modes button[aria-checked="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
 .sheet-body>.btn{align-self:stretch;padding:12px}
 
+/* ---------- note for a fresh iPhone home-screen app ---------- */
+.note{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-radius:12px;background:var(--accent-soft);font-size:14px}
+.note p{margin:0}
+.note .btn-row .btn{flex:0 1 auto;padding:8px 14px}
+
 /* ---------- undo toast ---------- */
 .toast{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));margin:0 auto;max-width:520px;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 16px;border-radius:12px;background:var(--ink);color:var(--ground);box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:10}
 .toast span{flex:1;min-width:0;overflow-wrap:anywhere}
@@ -220,6 +232,13 @@ div.row{cursor:default}
       <button type="button" class="btn" id="new-list">+ New list</button>
     </div>
   </header>
+  <div class="note ios-note" role="note" hidden>
+    <p><strong>Already have lists in Safari?</strong> The home screen app keeps its own lists, separate from Safari. To bring them here, open the link in Safari, go to <em>Backup &amp; restore</em> and tap <em>Copy as text</em>, then come back and restore it here.</p>
+    <div class="btn-row">
+      <button type="button" class="btn ios-restore">Restore a backup</button>
+      <button type="button" class="btn ghost ios-dismiss">Got it</button>
+    </div>
+  </div>
   <input id="search" class="field" type="search" placeholder="Find a list" aria-label="Find a list" hidden>
   <ul id="lists" class="lists"></ul>
   <footer class="foot">
@@ -250,6 +269,14 @@ div.row{cursor:default}
     </div>
     <div class="meter"><div class="bar"><i id="fill"></i></div><span id="count" class="count mono"></span></div>
   </header>
+
+  <div class="note ios-note" role="note" hidden>
+    <p><strong>Already have lists in Safari?</strong> The home screen app keeps its own lists, separate from Safari. To bring them here, open the link in Safari, go to <em>Backup &amp; restore</em> and tap <em>Copy as text</em>, then come back and restore it here.</p>
+    <div class="btn-row">
+      <button type="button" class="btn ios-restore">Restore a backup</button>
+      <button type="button" class="btn ghost ios-dismiss">Got it</button>
+    </div>
+  </div>
 
   <form id="add" class="add" autocomplete="off">
     <input id="new-item" class="field" placeholder="Add an item" aria-label="New item" maxlength="300" enterkeyhint="enter">
@@ -395,6 +422,7 @@ div.row{cursor:default}
     return { activeId: first.id, lists: [first] };
   }
 
+  const fresh = !ls.get(KEY) && !ls.get(OLD_KEY); // nothing saved here yet
   let data = load();
   let filter = ls.get('ticklist.filter') || 'all';
   let editing = null, query = '', reorderItems = false, reorderLists = false;
@@ -671,10 +699,11 @@ div.row{cursor:default}
   }
   function say(id, text, err) { const el = $(id); el.textContent = text; el.classList.toggle('err', !!err); }
 
-  $('backup-open').addEventListener('click', () => {
+  function openBackup() {
     say('bk-save-msg', ''); say('bk-restore-msg', ''); $('bk-text').value = ''; setPending(null);
     renderLastBackup(); openSheet(bkSheet);
-  });
+  }
+  $('backup-open').addEventListener('click', openBackup);
   $('bk-close').addEventListener('click', () => closeSheet(bkSheet));
 
   $('bk-download').addEventListener('click', () => {
@@ -729,7 +758,7 @@ div.row{cursor:default}
     e.target.value = '';
   });
   function finishRestore(label, fn) {
-    withUndo(label, fn);
+    withUndo(label, fn); hideIosNote();
     closeSheet(bkSheet); setPending(null);
     if (location.hash) goHome(); else renderHome();
   }
@@ -743,6 +772,17 @@ div.row{cursor:default}
     const lists = pending;
     finishRestore(`Replaced your lists with ${plural(lists.length, 'list')} from the backup`, () => { data.lists = lists; data.activeId = lists[0].id; });
   });
+
+  /* ---------- iPhone home-screen app: it has its own storage, separate from Safari ---------- */
+  if (navigator.standalone === true && fresh) ls.set('ticklist.iosNote', 'show');
+  function renderIosNote() {
+    const show = navigator.standalone === true && ls.get('ticklist.iosNote') === 'show';
+    document.querySelectorAll('.ios-note').forEach(n => { n.hidden = !show; });
+  }
+  function hideIosNote() { ls.set('ticklist.iosNote', 'done'); renderIosNote(); }
+  document.querySelectorAll('.ios-dismiss').forEach(b => b.addEventListener('click', hideIosNote));
+  document.querySelectorAll('.ios-restore').forEach(b => b.addEventListener('click', openBackup));
+  renderIosNote();
 
   /* ---------- start ---------- */
   // Keep two open tabs in step

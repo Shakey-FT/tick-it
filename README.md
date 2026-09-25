@@ -24,10 +24,12 @@ A simple checklist that works on your phone or computer. You can keep as many li
 
 ### Put it on your home screen
 
-This makes it open like an app. On iPhone it also stops Safari from clearing your lists.
+This adds a Tick List icon to your phone, and it opens full-screen like an app.
 
 - **iPhone (Safari):** tap **Share**, then **Add to Home Screen**.
-- **Android (Chrome):** tap **⋮**, then **Add to Home screen**.
+- **Android (Chrome):** tap **⋮**, then **Add to Home screen** or **Install app**.
+
+> **iPhone:** the home screen app keeps its own lists, separate from Safari. If you've already made lists in Safari, open the link in Safari, go to **Backup & restore**, tap **Copy as text**, then paste it into **Backup & restore** in the home screen app. The app shows a reminder about this the first time you open it. On Android, your lists appear in both places.
 
 ## Where your lists are saved
 
@@ -37,7 +39,7 @@ This means:
 
 - Your lists stay on the phone or computer where you made them. They don't sync between devices.
 - **Clearing your browser data deletes them.** So do private or incognito windows, when you close them.
-- Safari on iPhone may clear them if you don't open the page for about a week. Adding it to your home screen prevents this.
+- Safari on iPhone may clear them if you don't open the page for about a week. Using the home screen app avoids this, and a backup keeps you safe either way.
 
 ### Keep a backup
 
