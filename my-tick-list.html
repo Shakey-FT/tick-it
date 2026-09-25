@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Tick List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style id="css">
+:root{
+  --ground:#F4F6F2;--surface:#FFFFFF;--ink:#1B2420;--muted:#65716B;--rule:#DCE2DB;
+  --accent:#2E6A53;--accent-ink:#FFFFFF;--accent-soft:#E2EEE7;--danger:#A6412F;
+  --shadow:0 1px 2px rgba(27,36,32,.06),0 8px 24px -12px rgba(27,36,32,.18);
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#121614;--surface:#1A201D;--ink:#E3E9E5;--muted:#8D9A93;--rule:#2B3430;
+  --accent:#7CC3A3;--accent-ink:#0F1A15;--accent-soft:#1F3029;--danger:#E58A76;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --ground:#121614;--surface:#1A201D;--ink:#E3E9E5;--muted:#8D9A93;--rule:#2B3430;
+  --accent:#7CC3A3;--accent-ink:#0F1A15;--accent-soft:#1F3029;--danger:#E58A76;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);color-scheme:dark;}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font:15px/1.5 Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;padding:40px 16px 56px}
+.wrap{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.head{display:flex;flex-direction:column;gap:10px}
+.title{font-family:"Bricolage Grotesque",Figtree,system-ui,sans-serif;font-weight:700;font-size:clamp(28px,6vw,38px);line-height:1.1;letter-spacing:-.01em;
+  border:0;background:transparent;padding:2px 0;margin:0;width:100%;border-bottom:2px solid transparent;border-radius:0}
+.title:hover:not(:disabled){border-bottom-color:var(--rule)}
+.title:focus{outline:none;border-bottom-color:var(--accent)}
+.meter{display:flex;align-items:center;gap:12px}
+.bar{flex:1;height:6px;background:var(--rule);border-radius:3px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s ease}
+.count{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.add{display:flex;gap:8px}
+.add input{flex:1;min-width:0;padding:12px 14px;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
+.add input::placeholder{color:var(--muted)}
+.add input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.btn{border:0;border-radius:10px;padding:0 18px;background:var(--accent);color:var(--accent-ink);font-weight:600;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:default}
+
+.bar-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.filters{display:flex;gap:2px;background:var(--rule);padding:3px;border-radius:9px}
+.filters button{border:0;background:transparent;padding:5px 12px;border-radius:7px;font-size:13.5px;font-weight:500;color:var(--muted);cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.link{border:0;background:none;padding:4px 0;color:var(--muted);font-size:13.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--rule)}
+.link:hover:not(:disabled){color:var(--danger)}
+.link:disabled{opacity:.4;cursor:default;text-decoration:none}
+
+.list{list-style:none;margin:0;padding:0;background:var(--surface);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-top:1px solid var(--rule)}
+.item:first-child{border-top:0}
+.check{flex:none;width:22px;height:22px;margin-top:1px;border-radius:6px;border:2px solid var(--muted);background:transparent;cursor:pointer;display:grid;place-items:center;padding:0;transition:background .15s,border-color .15s}
+.check svg{width:13px;height:13px;opacity:0;transform:scale(.6);transition:opacity .15s,transform .15s}
+.item.done .check{background:var(--accent);border-color:var(--accent)}
+.item.done .check svg{opacity:1;transform:none}
+.check path{stroke:var(--accent-ink)}
+.text{flex:1;min-width:0;overflow-wrap:anywhere;padding:1px 0;cursor:text}
+.item.done .text{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--muted)}
+.edit{flex:1;min-width:0;border:0;border-bottom:1.5px solid var(--accent);background:transparent;padding:0 0 1px;outline:none}
+.del{flex:none;border:0;background:none;color:var(--muted);width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:18px;line-height:1;opacity:0;transition:opacity .15s}
+.item:hover .del,.del:focus-visible{opacity:1}
+.del:hover{color:var(--danger);background:var(--accent-soft)}
+@media (hover:none){.del{opacity:.6}}
+.empty{padding:28px 16px;text-align:center;color:var(--muted)}
+
+.foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.status{display:inline-flex;align-items:center;gap:6px}
+.status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.status[data-s="saved"]::before{background:var(--accent)}
+.status[data-s="pending"]::before,.status[data-s="saving"]::before{background:#C9962B}
+.status[data-s="error"]::before{background:var(--danger)}
+.readonly .add,.readonly .del{display:none}
+.readonly .check,.readonly .text{cursor:default}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<main id="app" class="wrap"></main>
+
+<script type="application/json" id="state" data-mode="personal">{"title":"My checklist","items":[{"id":"a1","text":"Tick this box to mark it done","done":true},{"id":"a2","text":"Add your own item in the box above","done":false},{"id":"a3","text":"Click any item's text to edit it","done":false},{"id":"a4","text":"Delete these examples with the × on each row","done":false}]}</script>
+
+<script id="app-js">
+(() => {
+  const FONTS = 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap';
+  const S = '<' + '/script>';
+  let state;
+  try { state = JSON.parse(document.getElementById('state').textContent); } catch { state = { title: 'My checklist', items: [] }; }
+  // Opened as a plain file outside claude.ai: keep this person's list in their own browser.
+  const standalone = !(window.claude && window.claude.use) || document.getElementById('state').dataset.mode === 'personal';
+  if (standalone) { try { const saved = JSON.parse(localStorage.getItem('ticklist.state')); if (saved && Array.isArray(saved.items)) state = saved; } catch {} }
+  if (!Array.isArray(state.items)) state.items = [];
+
+  const store = {
+    get(k, s) { try { return (s ? sessionStorage : localStorage).getItem(k); } catch { return null; } },
+    set(k, v, s) { try { (s ? sessionStorage : localStorage).setItem(k, v); } catch {} },
+    del(k, s) { try { (s ? sessionStorage : localStorage).removeItem(k); } catch {} }
+  };
+
+  let filter = store.get('ticklist.filter') || 'all';
+  let readOnly = false, editing = null, timer = null, retried = false;
+  let artifact; // undefined = still resolving, null = unavailable
+  const artReady = (!standalone ?window.claude.use('artifact') : Promise.resolve(null))
+    .then(a => {
+      artifact = a || null;
+      if (standalone) setStatus('saved', 'Saved in this browser');
+      else if (!artifact) setStatus('local', 'Preview only — changes aren’t saved here');
+      return artifact;
+    })
+    .catch(() => { artifact = null; return null; });
+
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const uid = () => Math.random().toString(36).slice(2, 9);
+  const app = document.getElementById('app');
+
+  app.innerHTML = `
+    <header class="head">
+      <input id="title" class="title" aria-label="Checklist name" maxlength="80">
+      <div class="meter"><div class="bar"><i id="fill"></i></div><span id="count" class="count"></span></div>
+    </header>
+    <form id="add" class="add" autocomplete="off">
+      <input id="new-item" placeholder="Add an item and press Enter" aria-label="New item" maxlength="300">
+      <button class="btn" id="add-btn" type="submit">Add</button>
+    </form>
+    <div class="bar-row">
+      <div class="filters" role="group" aria-label="Show">
+        <button type="button" data-f="all">All</button>
+        <button type="button" data-f="todo">To do</button>
+        <button type="button" data-f="done">Done</button>
+      </div>
+      <button type="button" class="link" id="clear">Clear done</button>
+    </div>
+    <ul id="list" class="list"></ul>
+    <footer class="foot"><span id="status" class="status" data-s="saved">Saved</span><span>Click an item to edit it</span></footer>`;
+
+  const $ = id => document.getElementById(id);
+  const titleEl = $('title'), newEl = $('new-item'), list = $('list');
+
+  function setStatus(s, text) { const el = $('status'); el.dataset.s = s; el.textContent = text; }
+
+  function render() {
+    const done = state.items.filter(i => i.done).length, total = state.items.length;
+    if (document.activeElement !== titleEl) titleEl.value = state.title || '';
+    $('count').textContent = total ? `${done} of ${total} done` : 'Nothing yet';
+    $('fill').style.width = total ? (done / total * 100) + '%' : '0';
+    $('clear').disabled = readOnly || !done;
+    $('clear').textContent = done ? `Clear done (${done})` : 'Clear done';
+    document.querySelectorAll('.filters button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === filter)));
+    app.classList.toggle('readonly', readOnly);
+    titleEl.disabled = readOnly;
+
+    const shown = state.items.filter(i => filter === 'all' || (filter === 'done') === !!i.done);
+    if (!shown.length) {
+      list.innerHTML = `<li class="empty">${total ? (filter === 'done' ? 'Nothing ticked off yet.' : 'All done. Nice.') : 'Your list is empty. Add the first item above.'}</li>`;
+      return;
+    }
+    list.innerHTML = shown.map(i => `
+      <li class="item${i.done ? ' done' : ''}" data-id="${esc(i.id)}">
+        <button type="button" class="check" role="checkbox" aria-checked="${!!i.done}" aria-label="${esc(i.text)}"${readOnly ? ' disabled' : ''}>
+          <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.2 4.8 9 10 3.2" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        ${editing === i.id
+          ? `<input class="edit" id="edit-${esc(i.id)}" value="${esc(i.text)}" aria-label="Edit item" maxlength="300">`
+          : `<span class="text">${esc(i.text)}</span>`}
+        <button type="button" class="del" aria-label="Delete ${esc(i.text)}">×</button>
+      </li>`).join('');
+    if (editing) { const e = $('edit-' + editing); if (e) { e.focus(); e.setSelectionRange(e.value.length, e.value.length); } }
+  }
+
+  function change() {
+    render(); if (readOnly) return;
+    if (standalone) {
+      try { localStorage.setItem('ticklist.state', JSON.stringify(state)); setStatus('saved', 'Saved in this browser'); }
+      catch { setStatus('error', 'This browser is blocking storage, so changes will be lost when you close the page'); }
+      return;
+    }
+    setStatus('pending', 'Unsaved changes…'); clearTimeout(timer); timer = setTimeout(save, 1400); }
+
+  function buildDoc() {
+    const json = JSON.stringify(state).replace(/</g, '\\u003c');
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+      + '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
+      + '<title>My Tick List</title>'
+      + '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+      + `<link rel="stylesheet" href="${FONTS}">`
+      + `<style id="css">${$('css').textContent}</style></head><body>`
+      + '<main id="app" class="wrap"></main>'
+      + `<script type="application/json" id="state" data-mode="personal">${json}${S}`
+      + `<script id="app-js">${$('app-js').textContent}${S}`
+      + '</body></html>';
+  }
+
+  async function save() {
+    if (editing) { timer = setTimeout(save, 1400); return; }
+    const art = artifact === undefined ? await artReady : artifact;
+    if (!art) { setStatus('local', 'Preview only — changes aren’t saved here'); return; }
+    setStatus('saving', 'Saving…');
+    store.set('ticklist.draft', newEl.value, true);
+    if (document.activeElement === newEl) store.set('ticklist.focus', '1', true);
+    try {
+      await art.publish(buildDoc());
+      setStatus('saved', 'Saved');
+    } catch (e) {
+      const c = e && e.code;
+      if (c === 'conflict') setStatus('pending', 'Someone else saved first — loading their version');
+      else if (['not_writer', 'not_granted', 'consent_required', 'capability_disabled', 'capability_removed', 'not_declared'].includes(c)) {
+        readOnly = true; render(); setStatus('local', 'Read-only — you can view this list but not change it');
+      } else if (c === 'rate_limited') { setStatus('pending', 'Saving shortly…'); timer = setTimeout(save, 6000); }
+      else if (!retried) { retried = true; timer = setTimeout(save, 1500 + Math.random() * 1500); }
+      else setStatus('error', 'Couldn’t save. Your changes are still here — make another edit to try again.');
+    }
+  }
+
+  function commitEdit(input, keep) {
+    const item = state.items.find(i => i.id === editing);
+    editing = null;
+    if (item && keep) {
+      const v = input.value.trim();
+      if (!v) { state.items = state.items.filter(i => i !== item); return change(); }
+      if (v !== item.text) { item.text = v; return change(); }
+    }
+    render();
+  }
+
+  $('add').addEventListener('submit', e => {
+    e.preventDefault();
+    const v = newEl.value.trim();
+    if (!v || readOnly) return;
+    state.items.push({ id: uid(), text: v, done: false });
+    newEl.value = ''; store.del('ticklist.draft', true);
+    if (filter === 'done') { filter = 'all'; store.set('ticklist.filter', filter); }
+    change();
+  });
+  newEl.addEventListener('input', () => store.set('ticklist.draft', newEl.value, true));
+
+  titleEl.addEventListener('keydown', e => { if (e.key === 'Enter') titleEl.blur(); if (e.key === 'Escape') { titleEl.value = state.title; titleEl.blur(); } });
+  titleEl.addEventListener('blur', () => { const v = titleEl.value.trim() || 'My checklist'; if (v !== state.title) { state.title = v; change(); } else titleEl.value = v; });
+
+  document.querySelector('.filters').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    filter = b.dataset.f; store.set('ticklist.filter', filter); render();
+  });
+
+  $('clear').addEventListener('click', () => { state.items = state.items.filter(i => !i.done); change(); });
+
+  list.addEventListener('click', e => {
+    if (readOnly) return;
+    const li = e.target.closest('.item'); if (!li) return;
+    const item = state.items.find(i => i.id === li.dataset.id); if (!item) return;
+    if (e.target.closest('.check')) { item.done = !item.done; change(); li.parentElement && list.querySelector(`[data-id="${CSS.escape(item.id)}"] .check`)?.focus(); }
+    else if (e.target.closest('.del')) { state.items = state.items.filter(i => i !== item); change(); }
+    else if (e.target.closest('.text') && editing !== item.id) { editing = item.id; render(); }
+  });
+  list.addEventListener('keydown', e => {
+    if (!e.target.classList.contains('edit')) return;
+    if (e.key === 'Enter') { e.preventDefault(); commitEdit(e.target, true); }
+    if (e.key === 'Escape') commitEdit(e.target, false);
+  });
+  list.addEventListener('focusout', e => { if (e.target.classList.contains('edit') && editing) commitEdit(e.target, true); });
+
+  const draft = store.get('ticklist.draft', true);
+  if (draft) newEl.value = draft;
+  if (store.get('ticklist.focus', true)) { store.del('ticklist.focus', true); newEl.focus(); }
+  render();
+})();
+</script>
+</body>
+</html>
