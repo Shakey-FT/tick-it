@@ -7,6 +7,7 @@ A simple checklist that works on your phone or computer. You can keep as many li
 ## What you can do
 
 - **Keep several lists** for groceries, packing, chores or anything else. Each one shows how many items are done.
+- **See your week** on the home screen: how many items you've ticked each day, Monday to Sunday, and how that compares with last week. Tap a day to see its number. Counting starts when you first open this version, and you can turn it off in Settings.
 - **Add, tick, edit and delete items.** Type in the box and press **Enter** or the round **+**. Tap an item's text to change it. On a phone, swipe an item left to delete it. On a computer, use the **×** that appears when you point at an item.
 - **Add several items at once.** Type them with commas, like `milk, eggs, bread`, and tap **Add as 3 items**. Pressing Enter still adds it as one item, and numbers like `1,5 kg` stay together.
 - **Suggestions as you type.** Start typing and Tick It suggests things you've added before, so "mi" offers **Milk**. Tap one to add it. If it's already on the list and ticked, tapping it unticks it instead of adding a copy. What it remembers stays on your device, and you can turn this off or clear it in Settings (with an Undo if you change your mind).
